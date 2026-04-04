@@ -1,0 +1,97 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  # Fork PRs do not have access to secrets — only same-repo PRs are supported.
+  pull_request:
+    branches: [master]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  deploy:
+    name: ${{ github.event_name == 'push' && 'Production Deploy' || 'Preview Deploy' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Quality gate ────────────────────────────────────────────────────────
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      # ── Prisma client generate (no DB connection needed) ────────────────────
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # ── Production: migrate (expand-contract policy — backwards-compatible only) ──
+      - name: Run database migrations
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      # ── Check secrets available ──────────────────────────────────────────────
+      # On push: missing secret is a hard failure (migrations already ran — must deploy).
+      # On PR: missing secret means fork PR — silently skip deploy steps.
+      - name: Check secrets available
+        id: secrets-check
+        run: |
+          if [ -z "$CF_API_TOKEN" ]; then
+            if [ "$EVENT" = "push" ]; then
+              echo "CLOUDFLARE_API_TOKEN secret is missing on a push event." >&2
+              exit 1
+            fi
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          EVENT: ${{ github.event_name }}
+
+      # ── Build for Cloudflare Pages ───────────────────────────────────────────
+      # No runtime secrets here — they are injected by Cloudflare at request time.
+      - name: Build for Cloudflare Pages
+        if: steps.secrets-check.outputs.skip != 'true'
+        run: npx @cloudflare/next-on-pages
+
+      # ── Deploy to Cloudflare Pages ───────────────────────────────────────────
+      - name: Deploy to Cloudflare Pages
+        if: steps.secrets-check.outputs.skip != 'true'
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >
+            pages deploy .vercel/output/static
+            --project-name=cost-estimator
+            ${{ github.ref != 'refs/heads/master' && '--branch=preview' || '' }}
+
+      # ── Comment PR with preview URL ──────────────────────────────────────────
+      - name: Comment PR with preview URL
+        if: github.event_name == 'pull_request' && steps.secrets-check.outputs.skip != 'true'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## Preview Deployment\n\n✅ **URL:** ${process.env.PREVIEW_URL}`
+            })

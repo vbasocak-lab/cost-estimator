@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 66f2a620566345bbb985b250d58545c47d6eb0aa vbasocak-lab <vbasocak@gmail.com> 1775254623 +0200	commit (initial): chore: initial commit — Next.js cost estimator with pg migration
+66f2a620566345bbb985b250d58545c47d6eb0aa 2c95bd288a4978fe5c368cee17db1a7874f3418f vbasocak-lab <vbasocak@gmail.com> 1775254636 +0200	commit: chore: remove dev.db from tracking
+2c95bd288a4978fe5c368cee17db1a7874f3418f 42f2d13fe598a2f2576727edcfc91ae7718f367b vbasocak-lab <vbasocak@gmail.com> 1775256615 +0200	commit: ci: add GitHub Actions deploy workflow
+42f2d13fe598a2f2576727edcfc91ae7718f367b 4a8fa0afa63e7a64113064bc523c46b0a8a284ad vbasocak-lab <vbasocak@gmail.com> 1775256986 +0200	commit: ci: harden deploy workflow — fix secret injection, await, fork guard, URL capture
+4a8fa0afa63e7a64113064bc523c46b0a8a284ad d5efc955a32b59d3a37aa7b7af65955af3bb33c7 vbasocak-lab <vbasocak@gmail.com> 1775258015 +0200	commit: feat: migrate to Cloudflare Pages — Neon HTTP adapter, wrangler config, CF Actions workflow
+d5efc955a32b59d3a37aa7b7af65955af3bb33c7 0a4b9d5a4eaba85d4b279d7661a7e0fdb7fc6144 vbasocak-lab <vbasocak@gmail.com> 1775288820 +0200	commit: fix: edge runtime compat - NextAuth v5, WebCrypto PBKDF2, Pool adapter, xlsx nodejs runtime
+0a4b9d5a4eaba85d4b279d7661a7e0fdb7fc6144 5096bf40ac8585d77c6b68fdebef16b408f29ce5 vbasocak-lab <vbasocak@gmail.com> 1775289740 +0200	commit: ci: use master branch instead of main
