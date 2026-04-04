@@ -47,9 +47,11 @@ export async function POST(
     facadeComplexity: version.facadeComplexity,
     finishLevelCode: version.finishLevel?.code ?? "standard",
     regionCode: version.project.region?.code ?? "OCC",
+    countryCode: version.project.country?.code ?? "FR",
     projectTypeCode: version.project.projectType?.code ?? "new_build",
     renovationScopeCode: version.renovationScope?.code,
     energyStandardCode: version.energyStandard?.code,
+    energyPackage: version.energyPackage ?? undefined,
     heatingType: version.heatingType,
     ventilationType: version.ventilationType,
     hasElevator: version.hasElevator,
@@ -57,6 +59,10 @@ export async function POST(
     overheadRate: version.overheadRate,
     profitRate: version.profitRate,
     vatRate: version.vatRate,
+    siteAccess: version.siteAccess ?? undefined,
+    bathroomCount: version.bathroomCount ?? 0,
+    hasKitchen: version.hasKitchen ?? false,
+    buildingAge: version.buildingAge ?? undefined,
   };
 
   try {

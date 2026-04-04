@@ -163,17 +163,19 @@ export default function NewProjectPage() {
   });
 
   const set = (field: keyof WizardData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const rawValue = e.target.value;
     const val = e.target.type === "checkbox"
       ? (e.target as HTMLInputElement).checked
       : e.target.type === "number"
-      ? parseFloat(e.target.value) || 0
-      : e.target.value;
+      ? Number.parseFloat(rawValue.replace(",", ".")) || 0
+      : rawValue;
     setData((prev) => ({ ...prev, [field]: val }));
   };
 
   const STEPS = [t("step1"), t("step2"), t("step3"), t("step4"), t("step5")];
+  const effectiveGrossAreaM2 = data.grossAreaM2 > 0 ? data.grossAreaM2 : data.netAreaM2;
   const estimatedCostPerM2 = estimateCostPerM2(data);
-  const estimatedTotal = estimatedCostPerM2 * (data.grossAreaM2 || 0) * (1 + data.vatRate / 100);
+  const estimatedTotal = estimatedCostPerM2 * (effectiveGrossAreaM2 || 0) * (1 + data.vatRate / 100);
   const completeness = computeDataCompleteness(data);
 
   const handleSubmit = async () => {
@@ -203,8 +205,8 @@ export default function NewProjectPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           label: data.label,
-          grossAreaM2: data.grossAreaM2,
-          netAreaM2: data.netAreaM2 || data.grossAreaM2 * 0.85,
+          grossAreaM2: effectiveGrossAreaM2,
+          netAreaM2: data.netAreaM2 || effectiveGrossAreaM2 * 0.85,
           floorsAboveGround: data.floorsAboveGround,
           floorsBelowGround: data.floorsBelowGround,
           commonAreaRatio: data.commonAreaRatio,
@@ -603,7 +605,7 @@ export default function NewProjectPage() {
                     { label: t("summaryProject"), value: data.projectName || "—" },
                     { label: t("summaryType"), value: PROJECT_TYPE_LABELS[data.projectTypeCode] || data.projectTypeCode || "—" },
                     { label: t("summaryRegion"), value: REGIONS.find(r => r.code === data.regionCode)?.name || "—" },
-                    { label: t("summaryArea"), value: data.grossAreaM2 ? `${data.grossAreaM2} m²` : "—" },
+                    { label: t("summaryArea"), value: effectiveGrossAreaM2 ? `${effectiveGrossAreaM2} m²` : "—" },
                     {
                       label: t("summaryFloors"),
                       value: `${data.floorsAboveGround} ${t("floorsAboveGround")}${data.floorsBelowGround > 0 ? ` + ${data.floorsBelowGround} ${t("basement")}` : ""}`,
@@ -648,7 +650,7 @@ export default function NewProjectPage() {
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    disabled={submitting || !data.projectName || !data.grossAreaM2}
+                    disabled={submitting || !data.projectName || effectiveGrossAreaM2 <= 0}
                     className="px-6 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
                     {submitting ? t("calculating") : t("calculate")}
@@ -664,7 +666,7 @@ export default function NewProjectPage() {
           <div className="bg-gray-900 text-white rounded-2xl p-6 sticky top-6">
             <div className="text-sm font-medium text-gray-300 mb-4">{t("liveEstimate")}</div>
 
-            {data.grossAreaM2 > 0 ? (
+            {effectiveGrossAreaM2 > 0 ? (
               <>
                 <div className="mb-5">
                   <div className="text-3xl font-bold">

@@ -249,7 +249,7 @@
     "confidenceMedium": "Medium",
     "confidenceLow": "Low",
     "indexUpdateTitle": "Update by INSEE index",
-    "indexUpdateInfo": "Prices can be updated automatically using BT (construction) indices published quarterly by INSEE. Formula: New price = Old price × (Current index / 2024 base index)."
+    "indexUpdateInfo": "Prices can be updated automatically using BT (construction) indices published quarterly by INSEE. Formula: indexed_price = base_price * (current_index / reference_index)."
   },
   "common": {
     "save": "Save",

@@ -75,3 +75,50 @@ export async function PATCH(
 
   return NextResponse.json(updated);
 }
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { id } = await params;
+
+  const existing = await prisma.project.findUnique({
+    where: { id },
+    select: { id: true, ownerUserId: true },
+  });
+
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (existing.ownerUserId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.calculationResultLine.deleteMany({
+      where: { calculationResult: { projectVersion: { projectId: id } } },
+    });
+
+    await tx.calculationResult.deleteMany({
+      where: { projectVersion: { projectId: id } },
+    });
+
+    await tx.report.deleteMany({
+      where: { projectVersion: { projectId: id } },
+    });
+
+    await tx.projectInput.deleteMany({
+      where: { projectVersion: { projectId: id } },
+    });
+
+    await tx.projectVersion.deleteMany({
+      where: { projectId: id },
+    });
+
+    await tx.project.delete({
+      where: { id },
+    });
+  });
+
+  return NextResponse.json({ ok: true, id });
+}

@@ -10,9 +10,11 @@ export interface ProjectVersionInput {
   facadeComplexity: string; // simple | standard | complex
   finishLevelCode: string;  // standard | premium | luxury
   regionCode: string;
+  countryCode?: string;
   projectTypeCode: string;  // new_build | renovation | extension
   renovationScopeCode?: string; // light | complete | heavy
   energyStandardCode?: string;
+  energyPackage?: string;   // RE2020_standard | RE2020_advanced
   heatingType: string;
   ventilationType: string;
   hasElevator: boolean;
@@ -20,6 +22,11 @@ export interface ProjectVersionInput {
   overheadRate: number;
   profitRate: number;
   vatRate: number;
+  // New project-level inputs for rule evaluation
+  siteAccess?: string;      // easy | difficult | very_difficult
+  bathroomCount?: number;
+  hasKitchen?: boolean;
+  buildingAge?: string;     // pre_1948 | post_1948
   floorsAboveGround_raw?: number;
 }
 

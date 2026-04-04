@@ -259,7 +259,7 @@
     "confidenceMedium": "Orta",
     "confidenceLow": "Düşük",
     "indexUpdateTitle": "INSEE endeksiyle güncelleme",
-    "indexUpdateInfo": "Fiyatlar, INSEE tarafından üç aylık yayımlanan BT endekslerine göre otomatik güncellenebilir. Formül: Yeni fiyat = Eski fiyat × (Güncel endeks / 2024 baz endeksi)."
+    "indexUpdateInfo": "Fiyatlar, INSEE tarafından üç aylık yayımlanan BT endekslerine göre otomatik güncellenebilir. Formül: indexed_price = base_price * (current_index / reference_index)."
   },
   "common": {
     "save": "Kaydet",

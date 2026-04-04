@@ -255,6 +255,11 @@ export default function PriceLibraryClient({
   const [bulkPercent, setBulkPercent] = useState("5");
   const [bulkLot, setBulkLot] = useState("all");
   const [bulkMessage, setBulkMessage] = useState("");
+  const [indexSaving, setIndexSaving] = useState(false);
+  const [referenceIndex, setReferenceIndex] = useState("100");
+  const [currentIndex, setCurrentIndex] = useState("128.4");
+  const [indexLot, setIndexLot] = useState("all");
+  const [indexMessage, setIndexMessage] = useState("");
   const [localItems, setLocalItems] = useState(items);
 
   const lots = Array.from(new Set(items.map((i) => i.costLot.code)));
@@ -338,6 +343,63 @@ export default function PriceLibraryClient({
     }
   };
 
+  const handleIndexUpdate = async () => {
+    const current = parseFloat(currentIndex);
+    const reference = parseFloat(referenceIndex);
+
+    if (!Number.isFinite(current) || current <= 0) {
+      setIndexMessage("Gecerli bir guncel endeks girin.");
+      return;
+    }
+
+    if (!Number.isFinite(reference) || reference <= 0) {
+      setIndexMessage("Gecerli bir referans endeks girin.");
+      return;
+    }
+
+    setIndexSaving(true);
+    setIndexMessage("");
+
+    try {
+      const res = await fetch("/api/price-library", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "index",
+          currentIndex: current,
+          referenceIndex: reference,
+          lotCode: indexLot,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setIndexMessage(err.error || "Endeks guncellemesi basarisiz.");
+        return;
+      }
+
+      const payload = await res.json();
+      const ids = new Set<string>((payload.ids || []) as string[]);
+      const multiplier = current / reference;
+
+      setLocalItems((prev) =>
+        prev.map((item) => {
+          if (!ids.has(item.id)) return item;
+          const nextPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
+          return {
+            ...item,
+            basePriceHt: nextPrice,
+            updateLogs: [{ updatedAt: new Date(), updateMethod: "index_formula" }, ...(item.updateLogs || [])],
+          };
+        })
+      );
+
+      setIndexMessage(`${payload.updatedCount || 0} kayit formulle guncellendi.`);
+    } finally {
+      setIndexSaving(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl">
       <div className="mb-8">
@@ -387,6 +449,58 @@ export default function PriceLibraryClient({
               </button>
             </div>
             {bulkMessage && <div className="mt-2 text-xs text-blue-800">{bulkMessage}</div>}
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="mb-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50">
+            <div className="text-sm font-semibold text-emerald-900 mb-1">{tAdmin("updateIndex")}</div>
+            <div className="text-xs text-emerald-800 mb-3">indexed_price = base_price * (current_index / reference_index)</div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <label className="block text-xs text-emerald-800 mb-1">Reference index</label>
+                <input
+                  type="number"
+                  value={referenceIndex}
+                  onChange={(e) => setReferenceIndex(e.target.value)}
+                  step="0.01"
+                  className="w-32 px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-emerald-800 mb-1">Current index</label>
+                <input
+                  type="number"
+                  value={currentIndex}
+                  onChange={(e) => setCurrentIndex(e.target.value)}
+                  step="0.01"
+                  className="w-32 px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-emerald-800 mb-1">Lot filtresi</label>
+                <select
+                  value={indexLot}
+                  onChange={(e) => setIndexLot(e.target.value)}
+                  className="px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white"
+                >
+                  <option value="all">Tum lotlar</option>
+                  {lots.map((lot) => (
+                    <option key={lot} value={lot}>
+                      {items.find((i) => i.costLot.code === lot)?.costLot.translations[0]?.label || lot}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={handleIndexUpdate}
+                disabled={indexSaving}
+                className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {indexSaving ? "Guncelleniyor..." : tAdmin("updateIndex")}
+              </button>
+            </div>
+            {indexMessage && <div className="mt-2 text-xs text-emerald-800">{indexMessage}</div>}
           </div>
         )}
 

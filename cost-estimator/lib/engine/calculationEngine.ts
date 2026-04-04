@@ -89,7 +89,7 @@ export async function runCalculation(input: ProjectVersionInput): Promise<Engine
   const rules = await prisma.calculationRule.findMany({
     where: { isActive: true },
     include: { conditions: true },
-    orderBy: { priority: "desc" },
+    orderBy: { priority: "asc" },
   });
 
   const ruleEffects = applyRules(rules, input);
@@ -158,18 +158,24 @@ export async function runCalculation(input: ProjectVersionInput): Promise<Engine
   // 6. Aggregate
   const baseTotalHt = calculatedLots.reduce((sum, l) => sum + l.lineTotalHt, 0);
 
-  const contingencyRate = input.contingencyRate + ruleEffects.contingencyUplift;
-  const contingencyAmount = baseTotalHt * contingencyRate;
-  const overheadAmount = baseTotalHt * input.overheadRate;
-  const profitAmount = baseTotalHt * input.profitRate;
+  // Apply global coefficient from rules (surface scale, etc.)
+  const adjustedBaseHt = baseTotalHt * ruleEffects.globalCoefficientMultiplier;
 
-  const totalCostHt = baseTotalHt + contingencyAmount + overheadAmount + profitAmount;
+  const contingencyRate = input.contingencyRate + ruleEffects.contingencyUplift;
+  const contingencyAmount = adjustedBaseHt * contingencyRate;
+  const overheadAmount = adjustedBaseHt * input.overheadRate;
+  const profitAmount = adjustedBaseHt * input.profitRate;
+
+  const totalCostHt = adjustedBaseHt + contingencyAmount + overheadAmount + profitAmount;
   const totalCostTva = totalCostHt * input.vatRate;
   const totalCostTtc = totalCostHt + totalCostTva;
 
   const area = input.grossAreaM2 > 0 ? input.grossAreaM2 : 1;
   const costPerM2Ht = totalCostHt / area;
   const costPerM2Ttc = totalCostTtc / area;
+
+  // Confidence: rule override takes priority, otherwise auto-determine
+  const confidenceLevel = ruleEffects.confidenceOverride ?? determineConfidence(input);
 
   return {
     lots: calculatedLots,
@@ -181,7 +187,7 @@ export async function runCalculation(input: ProjectVersionInput): Promise<Engine
     contingencyAmount,
     overheadAmount,
     profitAmount,
-    confidenceLevel: determineConfidence(input),
+    confidenceLevel,
     sensitivityLow: totalCostHt * 0.85,
     sensitivityHigh: totalCostHt * 1.15,
     warnings: ruleEffects.warnings,

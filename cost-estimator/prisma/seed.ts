@@ -197,6 +197,18 @@ async function main() {
     { code: "ascenseur", catId: catTech.id, unit: "u", sort: 15, fr: "Ascenseur", en: "Elevator", de: "Aufzug", tr: "Asansör" },
     // VRD
     { code: "vrd", catId: catVrd.id, unit: "forfait", sort: 16, fr: "VRD / Aménagements extérieurs", en: "Site Works / Landscaping", de: "Erschließung / Außenanlagen", tr: "Altyapı / Peyzaj" },
+    // Gros œuvre — rénovation spécifique
+    { code: "demolition", catId: catGros.id, unit: "m2", sort: 17, fr: "Démolition", en: "Demolition", de: "Abriss", tr: "Yıkım" },
+    { code: "curage", catId: catGros.id, unit: "m2", sort: 18, fr: "Curage / Désamiantage", en: "Stripping / Asbestos removal", de: "Entkernen / Asbest", tr: "Boşaltma / Asbest söküm" },
+    { code: "reprises_structurelles", catId: catGros.id, unit: "forfait", sort: 19, fr: "Reprises structurelles", en: "Structural remediation", de: "Unterfangung / Sanierung", tr: "Yapısal onarım" },
+    { code: "etancheite", catId: catGros.id, unit: "m2", sort: 20, fr: "Étanchéité soubassements / toiture", en: "Waterproofing", de: "Abdichtung", tr: "Su yalıtımı" },
+    { code: "installation_chantier", catId: catGros.id, unit: "forfait", sort: 21, fr: "Installation de chantier", en: "Site installation", de: "Baustelleneinrichtung", tr: "Şantiye kurulumu" },
+    // Second œuvre — merdiven ayrı lot
+    { code: "escalier", catId: catSecond.id, unit: "u", sort: 22, fr: "Escalier", en: "Staircase", de: "Treppe", tr: "Merdiven" },
+    // Technique — enerji alternatifleri
+    { code: "heat_pump", catId: catTech.id, unit: "u", sort: 23, fr: "Pompe à chaleur", en: "Heat pump", de: "Wärmepumpe", tr: "Isı pompası" },
+    { code: "electric_heating", catId: catTech.id, unit: "m2", sort: 24, fr: "Chauffage électrique", en: "Electric heating", de: "Elektroheizung", tr: "Elektrikli ısıtma" },
+    { code: "double_flux", catId: catTech.id, unit: "u", sort: 25, fr: "VMC double flux", en: "Dual-flow VMC", de: "KWL Lüftung", tr: "Çift akışlı VMC" },
   ];
 
   const lotMap: Record<string, string> = {};
@@ -294,6 +306,38 @@ async function main() {
     { code: "VRD-002", lot: "vrd", name: "Terrassements extérieurs / parking", unit: "m2", price: 45 },
     { code: "VRD-003", lot: "vrd", name: "Clôture + portail", unit: "ml", price: 280 },
     { code: "VRD-004", lot: "vrd", name: "Aménagement paysager (gazon + plantations)", unit: "m2", price: 35 },
+    // Démolition
+    { code: "DEMO-001", lot: "demolition", name: "Démolition cloisons légères", unit: "m2", price: 18 },
+    { code: "DEMO-002", lot: "demolition", name: "Démolition structure béton/maçonnerie", unit: "m2", price: 55 },
+    { code: "DEMO-003", lot: "demolition", name: "Évacuation gravats (benne)", unit: "m2", price: 12 },
+    // Curage
+    { code: "CUR-001", lot: "curage", name: "Curage complet (vide de l'existant)", unit: "m2", price: 35 },
+    { code: "CUR-002", lot: "curage", name: "Désamiantage (diagnostic + travaux)", unit: "m2", price: 120 },
+    // Reprises structurelles
+    { code: "REP-001", lot: "reprises_structurelles", name: "Reprise en sous-œuvre (micropieux)", unit: "forfait", price: 25000 },
+    { code: "REP-002", lot: "reprises_structurelles", name: "Renforcement plancher / poutrelles", unit: "forfait", price: 15000 },
+    // Étanchéité
+    { code: "ETA-001", lot: "etancheite", name: "Étanchéité soubassement (drainage + membrane)", unit: "m2", price: 85 },
+    { code: "ETA-002", lot: "etancheite", name: "Étanchéité toiture-terrasse (bicouche)", unit: "m2", price: 92 },
+    { code: "ETA-003", lot: "etancheite", name: "Cuvelage béton (sous-sol)", unit: "m2", price: 145 },
+    // Installation de chantier
+    { code: "IC-001", lot: "installation_chantier", name: "Installation de chantier (base)", unit: "forfait", price: 8000 },
+    { code: "IC-002", lot: "installation_chantier", name: "Installation de chantier (urbain difficile)", unit: "forfait", price: 18000 },
+    // Escalier
+    { code: "ESC-001", lot: "escalier", name: "Escalier béton coulé en place", unit: "u", price: 5500 },
+    { code: "ESC-002", lot: "escalier", name: "Escalier bois standard", unit: "u", price: 4500 },
+    { code: "ESC-003", lot: "escalier", name: "Escalier métal design", unit: "u", price: 12000 },
+    { code: "ESC-004", lot: "escalier", name: "Escalier marbre / pierre naturelle", unit: "u", price: 25000 },
+    // Pompe à chaleur
+    { code: "PAC-001", lot: "heat_pump", name: "PAC air/eau (jusqu'à 120 m²)", unit: "u", price: 14000 },
+    { code: "PAC-002", lot: "heat_pump", name: "PAC air/eau haute puissance (120-250 m²)", unit: "u", price: 22000 },
+    { code: "PAC-003", lot: "heat_pump", name: "PAC géothermique", unit: "u", price: 32000 },
+    // Chauffage électrique
+    { code: "ELCH-001", lot: "electric_heating", name: "Radiateurs à inertie électriques", unit: "m2", price: 55 },
+    { code: "ELCH-002", lot: "electric_heating", name: "Plancher chauffant électrique", unit: "m2", price: 75 },
+    // VMC double flux
+    { code: "VMC-001", lot: "double_flux", name: "VMC double flux résidentielle (jusqu'à 150 m²)", unit: "u", price: 4500 },
+    { code: "VMC-002", lot: "double_flux", name: "VMC double flux haute performance (150-300 m²)", unit: "u", price: 7500 },
   ];
 
   for (const item of priceItems) {
@@ -389,91 +433,245 @@ async function main() {
     });
   }
 
-  // ─── CALCULATION RULES ────────────────────────────────────────────────────
-  const rules = [
+  // ─── CALCULATION RULES (v2 — conditionJson / actionJson) ─────────────────
+  const rulesV2 = [
     {
-      code: "RULE_ELEVATOR",
-      name: "Asansör aktivasyonu (4+ kat)",
-      type: "trigger",
-      conditions: [{ field: "floorsAboveGround", op: "gte", val: "4" }],
-      output: "activate_lot:ascenseur",
+      code: "RULE_REGION_IDF",
+      labelFr: "Coefficient régional Île-de-France",
+      labelTr: "Île-de-France bölgesel katsayı",
+      type: "condition", priority: 100, regionScope: "IDF",
+      conditionJson: JSON.stringify({ region: "IDF" }),
+      actionJson: JSON.stringify({ set_region_coef: 1.28, apply_on: "travaux_ht_only" }),
     },
     {
-      code: "RULE_BASEMENT",
-      name: "Bodrum katsayı artışı",
-      type: "condition",
-      conditions: [{ field: "floorsBelowGround", op: "gte", val: "1" }],
-      output: "increase_coef:terrassement:1.35",
+      code: "RULE_REGION_MAJOR_CITY",
+      labelFr: "Coefficient régional grande ville",
+      labelTr: "Büyük şehir bölgesel katsayı",
+      type: "condition", priority: 110, regionScope: "major_city",
+      conditionJson: JSON.stringify({ region_type: "major_city" }),
+      actionJson: JSON.stringify({ set_region_coef: 1.12, apply_on: "travaux_ht_only" }),
     },
     {
-      code: "RULE_HEAVY_RENOVATION",
-      name: "Ağır renovasyon ek lotlar",
-      type: "trigger",
-      conditions: [
-        { field: "projectType", op: "eq", val: "renovation" },
-        { field: "renovationScope", op: "eq", val: "heavy" },
-      ],
-      output: "increase_contingency:0.05",
+      code: "RULE_PROJECT_NEW_BUILD",
+      labelFr: "Contrôle des lots obligatoires pour construction neuve",
+      labelTr: "Yeni yapı zorunlu lot kontrolü",
+      type: "condition", priority: 200, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type: "new_build" }),
+      actionJson: JSON.stringify({ require_lots: ["terrassement","fondations","gros_oeuvre_structure","charpente","couverture","menuiseries_ext","isolation","cloisons","revetements","peinture","electricite","plomberie","chauffage_ventilation","vrd"] }),
     },
     {
-      code: "RULE_RE2020",
-      name: "RE2020 enerji paketi zorunluluğu",
-      type: "condition",
-      conditions: [
-        { field: "projectType", op: "eq", val: "new_build" },
-        { field: "energyStandard", op: "eq", val: "re2020" },
-      ],
-      output: "require_selection:energyPackage",
+      code: "RULE_RENOV_LIGHT",
+      labelFr: "Provision pour rénovation légère",
+      labelTr: "Hafif renovasyon risk payı",
+      type: "condition", priority: 210, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type: "light_renovation" }),
+      actionJson: JSON.stringify({ increase_contingency: 0.05 }),
     },
     {
-      code: "RULE_IDF_COEFFICIENT",
-      name: "Île-de-France bölgesel katsayı",
-      type: "condition",
-      conditions: [{ field: "regionCode", op: "eq", val: "IDF" }],
-      output: "set_region_coef:1.28",
+      code: "RULE_RENOV_HEAVY",
+      labelFr: "Provision et activation des lots pour rénovation lourde",
+      labelTr: "Ağır renovasyon risk ve ek lot aktivasyonu",
+      type: "condition", priority: 220, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type: "heavy_renovation" }),
+      actionJson: JSON.stringify({ increase_contingency: 0.15, activate_lots: ["demolition","curage","reprises_structurelles"] }),
+    },
+    {
+      code: "RULE_RENOV_HEAVY_OLD_BUILDING",
+      labelFr: "Risque supplémentaire pour rénovation lourde bâtiment ancien",
+      labelTr: "Eski yapı ağır renovasyon ek riski",
+      type: "condition", priority: 230, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type: "heavy_renovation", building_age: "pre_1948" }),
+      actionJson: JSON.stringify({ increase_contingency: 0.20 }),
+    },
+    {
+      code: "RULE_MIN_TECHNICAL_LOTS",
+      labelFr: "Lots techniques minimum obligatoires",
+      labelTr: "Minimum teknik lot zorunluluğu",
+      type: "condition", priority: 300, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type_in: ["new_build","light_renovation","heavy_renovation"] }),
+      actionJson: JSON.stringify({ require_lots: ["electricite","plomberie"] }),
+    },
+    {
+      code: "RULE_HEATING_REQUIRED",
+      labelFr: "Système de chauffage obligatoire",
+      labelTr: "Isıtma sistemi zorunluluğu",
+      type: "condition", priority: 310, regionScope: "ALL",
+      conditionJson: JSON.stringify({ heated_area_m2_gt: 20 }),
+      actionJson: JSON.stringify({ require_one_of_lots: ["chauffage_ventilation","heat_pump","electric_heating"] }),
+    },
+    {
+      code: "RULE_BATHROOM_PLUMBING",
+      labelFr: "Plomberie obligatoire s'il y a une salle de bain",
+      labelTr: "Banyo varsa sıhhi tesisat zorunlu",
+      type: "condition", priority: 320, regionScope: "ALL",
+      conditionJson: JSON.stringify({ bathroom_count_gt: 0 }),
+      actionJson: JSON.stringify({ require_lots: ["plomberie"] }),
+    },
+    {
+      code: "RULE_KITCHEN_CONNECTIONS",
+      labelFr: "Plomberie et électricité obligatoires s'il y a une cuisine",
+      labelTr: "Mutfak varsa su ve elektrik zorunlu",
+      type: "condition", priority: 330, regionScope: "ALL",
+      conditionJson: JSON.stringify({ kitchen: true }),
+      actionJson: JSON.stringify({ require_lots: ["plomberie","electricite"] }),
+    },
+    {
+      code: "RULE_BASEMENT_IMPACT",
+      labelFr: "Impact du sous-sol sur les coûts",
+      labelTr: "Bodrum kat maliyet etkisi",
+      type: "condition", priority: 400, regionScope: "ALL",
+      conditionJson: JSON.stringify({ has_basement: true }),
+      actionJson: JSON.stringify({ increase_coef: { terrassement: 1.35, fondations: 1.25, gros_oeuvre_structure: 1.15, etancheite: 1.40, vrd: 1.10 } }),
+    },
+    {
+      code: "RULE_ELEVATOR_4_FLOORS",
+      labelFr: "Activation de l'ascenseur à partir de 4 niveaux",
+      labelTr: "4+ katta asansör aktivasyonu",
+      type: "trigger", priority: 410, regionScope: "ALL",
+      conditionJson: JSON.stringify({ floors_gte: 4 }),
+      actionJson: JSON.stringify({ activate_lots: ["ascenseur"] }),
+    },
+    {
+      code: "RULE_STRUCTURE_HEIGHT",
+      labelFr: "Majoration structure selon le nombre de niveaux",
+      labelTr: "Kat sayısına göre taşıyıcı artış",
+      type: "condition", priority: 420, regionScope: "ALL",
+      conditionJson: JSON.stringify({ floors_gte: 3 }),
+      actionJson: JSON.stringify({ increase_coef: { gros_oeuvre_structure: 1.10, fondations: 1.08 } }),
+    },
+    {
+      code: "RULE_RE2020_PACKAGE_REQUIRED",
+      labelFr: "Sélection obligatoire d'un pack RE2020",
+      labelTr: "RE2020 enerji paketi seçimi zorunlu",
+      type: "condition", priority: 500, regionScope: "ALL",
+      conditionJson: JSON.stringify({ project_type: "new_build", country: "FR" }),
+      actionJson: JSON.stringify({ require_selection: ["energy_package"] }),
+    },
+    {
+      code: "RULE_RE2020_STANDARD",
+      labelFr: "Impact du pack énergie RE2020 standard",
+      labelTr: "RE2020 standart enerji paketi etkisi",
+      type: "condition", priority: 510, regionScope: "ALL",
+      conditionJson: JSON.stringify({ energy_package: "RE2020_standard" }),
+      actionJson: JSON.stringify({ increase_coef: { isolation: 1.12, menuiseries_ext: 1.08, chauffage_ventilation: 1.15 } }),
+    },
+    {
+      code: "RULE_RE2020_ADVANCED",
+      labelFr: "Impact du pack énergie RE2020 avancé",
+      labelTr: "RE2020 gelişmiş enerji paketi etkisi",
+      type: "condition", priority: 520, regionScope: "ALL",
+      conditionJson: JSON.stringify({ energy_package: "RE2020_advanced" }),
+      actionJson: JSON.stringify({ increase_coef: { isolation: 1.18, menuiseries_ext: 1.12, chauffage_ventilation: 1.20 }, activate_lots: ["heat_pump","double_flux"] }),
     },
     {
       code: "RULE_PREMIUM_FINISH",
-      name: "Premium bitiş artışı",
-      type: "condition",
-      conditions: [{ field: "finishLevel", op: "eq", val: "premium" }],
-      output: "increase_coef:revetements:1.30",
+      labelFr: "Niveau de finition premium",
+      labelTr: "Premium bitiş seviyesi",
+      type: "condition", priority: 600, regionScope: "ALL",
+      conditionJson: JSON.stringify({ finish_level: "premium" }),
+      actionJson: JSON.stringify({ increase_coef: { revetements: 1.30, menuiseries_int: 1.20, menuiseries_ext: 1.15, plomberie: 1.20, electricite: 1.10, peinture: 1.10 } }),
     },
     {
       code: "RULE_LUXURY_FINISH",
-      name: "Luxury bitiş artışı",
-      type: "condition",
-      conditions: [{ field: "finishLevel", op: "eq", val: "luxury" }],
-      output: "increase_coef:revetements:1.65",
+      labelFr: "Niveau de finition luxe",
+      labelTr: "Luxury bitiş seviyesi",
+      type: "condition", priority: 610, regionScope: "ALL",
+      conditionJson: JSON.stringify({ finish_level: "luxury" }),
+      actionJson: JSON.stringify({ increase_coef: { revetements: 1.65, menuiseries_int: 1.50, menuiseries_ext: 1.35, plomberie: 1.40, electricite: 1.25, peinture: 1.20, escalier: 1.35 } }),
+    },
+    {
+      code: "RULE_SMALL_SURFACE",
+      labelFr: "Majoration pour petite surface",
+      labelTr: "Küçük proje maliyet artışı",
+      type: "condition", priority: 700, regionScope: "ALL",
+      conditionJson: JSON.stringify({ surface_m2_lt: 80 }),
+      actionJson: JSON.stringify({ increase_global_coef: 1.20, apply_on: "travaux_ht_only" }),
+    },
+    {
+      code: "RULE_MEDIUM_SURFACE",
+      labelFr: "Ajustement pour surface moyenne",
+      labelTr: "Orta ölçek proje düzeltmesi",
+      type: "condition", priority: 710, regionScope: "ALL",
+      conditionJson: JSON.stringify({ surface_m2_gte: 80, surface_m2_lte: 150 }),
+      actionJson: JSON.stringify({ increase_global_coef: 1.00, apply_on: "travaux_ht_only" }),
+    },
+    {
+      code: "RULE_LARGE_SURFACE",
+      labelFr: "Avantage d'échelle pour grande surface",
+      labelTr: "Büyük proje ölçek avantajı",
+      type: "condition", priority: 720, regionScope: "ALL",
+      conditionJson: JSON.stringify({ surface_m2_gt: 150 }),
+      actionJson: JSON.stringify({ decrease_global_coef: 0.05, apply_on: "travaux_ht_only" }),
+    },
+    {
+      code: "RULE_DENSE_URBAN_SITE",
+      labelFr: "Impact d'un site urbain dense",
+      labelTr: "Yoğun kentsel alan etkisi",
+      type: "condition", priority: 800, regionScope: "ALL",
+      conditionJson: JSON.stringify({ site_access: "difficult" }),
+      actionJson: JSON.stringify({ increase_coef: { terrassement: 1.15, gros_oeuvre_structure: 1.08, vrd: 1.10 }, increase_contingency: 0.03 }),
+    },
+    {
+      code: "RULE_VERY_DIFFICULT_ACCESS",
+      labelFr: "Impact d'un accès chantier très difficile",
+      labelTr: "Çok zor saha erişimi etkisi",
+      type: "condition", priority: 810, regionScope: "ALL",
+      conditionJson: JSON.stringify({ site_access: "very_difficult" }),
+      actionJson: JSON.stringify({ increase_coef: { terrassement: 1.25, gros_oeuvre_structure: 1.12, vrd: 1.15, installation_chantier: 1.20 }, increase_contingency: 0.05 }),
+    },
+    {
+      code: "RULE_CONFIDENCE_ADVANCED",
+      labelFr: "Niveau de confiance avancé",
+      labelTr: "Yüksek güven seviyesi",
+      type: "condition", priority: 900, regionScope: "ALL",
+      conditionJson: JSON.stringify({ required_lots_completed_pct_gte: 90, project_inputs_completed_pct_gte: 85, technical_lots_present: true }),
+      actionJson: JSON.stringify({ set_confidence: "avance" }),
+    },
+    {
+      code: "RULE_CONFIDENCE_MEDIUM",
+      labelFr: "Niveau de confiance moyen",
+      labelTr: "Orta güven seviyesi",
+      type: "condition", priority: 910, regionScope: "ALL",
+      conditionJson: JSON.stringify({ required_lots_completed_pct_gte: 65, project_inputs_completed_pct_gte: 60 }),
+      actionJson: JSON.stringify({ set_confidence: "affine" }),
+    },
+    {
+      code: "RULE_CONFIDENCE_LOW",
+      labelFr: "Niveau de confiance bas",
+      labelTr: "Düşük güven seviyesi",
+      type: "default", priority: 920, regionScope: "ALL",
+      conditionJson: JSON.stringify({}),
+      actionJson: JSON.stringify({ set_confidence: "indicatif" }),
     },
   ];
 
-  for (const r of rules) {
-    const rule = await prisma.calculationRule.upsert({
+  for (const r of rulesV2) {
+    await prisma.calculationRule.upsert({
       where: { ruleCode: r.code },
-      update: { name: r.name },
+      update: {
+        labelFr: r.labelFr,
+        labelTr: r.labelTr,
+        ruleType: r.type,
+        priority: r.priority,
+        regionScope: r.regionScope,
+        conditionJson: r.conditionJson,
+        actionJson: r.actionJson,
+        isActive: true,
+      },
       create: {
         ruleCode: r.code,
-        name: r.name,
+        name: r.labelFr,
+        labelFr: r.labelFr,
+        labelTr: r.labelTr,
         ruleType: r.type,
-        outputTarget: r.output,
+        priority: r.priority,
+        regionScope: r.regionScope,
+        conditionJson: r.conditionJson,
+        actionJson: r.actionJson,
         countryId: france.id,
         isActive: true,
       },
     });
-    for (const cond of r.conditions) {
-      await prisma.ruleCondition.upsert({
-        where: { id: `rc_${r.code}_${cond.field}_${cond.val}` },
-        update: { compareValue: cond.val },
-        create: {
-          id: `rc_${r.code}_${cond.field}_${cond.val}`,
-          ruleId: rule.id,
-          fieldName: cond.field,
-          operator: cond.op,
-          compareValue: cond.val,
-        },
-      });
-    }
   }
 
   // ─── DEMO USER & COMPANY ──────────────────────────────────────────────────

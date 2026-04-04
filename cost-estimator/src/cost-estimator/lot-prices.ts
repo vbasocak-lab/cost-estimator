@@ -1,0 +1,28 @@
+import type { LotCode, LotPrice } from "./types";
+
+export const LOT_PRICES: Record<LotCode, LotPrice> = {
+  terrassement: { lot_code: "terrassement", label: "Terrassement", unit: "m3", base_price_ht: 45 },
+  fondations: { lot_code: "fondations", label: "Fondations", unit: "m3", base_price_ht: 210 },
+  structure: { lot_code: "structure", label: "Structure / Maconnerie", unit: "m2", base_price_ht: 145 },
+  charpente: { lot_code: "charpente", label: "Charpente", unit: "m2", base_price_ht: 85 },
+  couverture: { lot_code: "couverture", label: "Couverture", unit: "m2", base_price_ht: 105 },
+  etancheite: { lot_code: "etancheite", label: "Etancheite", unit: "m2", base_price_ht: 85 },
+  menuiseries_exterieures: { lot_code: "menuiseries_exterieures", label: "Menuiseries exterieures", unit: "u", base_price_ht: 1100 },
+  menuiseries_interieures: { lot_code: "menuiseries_interieures", label: "Menuiseries interieures", unit: "u", base_price_ht: 480 },
+  isolation: { lot_code: "isolation", label: "Isolation", unit: "m2", base_price_ht: 62 },
+  cloisons: { lot_code: "cloisons", label: "Cloisons / Platrerie", unit: "m2", base_price_ht: 48 },
+  revetements: { lot_code: "revetements", label: "Revetements sols / murs", unit: "m2", base_price_ht: 78 },
+  peinture: { lot_code: "peinture", label: "Peinture", unit: "m2", base_price_ht: 28 },
+  plomberie: { lot_code: "plomberie", label: "Plomberie / Sanitaires", unit: "forfait", base_price_ht: 9500 },
+  electricite: { lot_code: "electricite", label: "Electricite", unit: "m2", base_price_ht: 110 },
+  chauffage: { lot_code: "chauffage", label: "Chauffage", unit: "forfait", base_price_ht: 12000 },
+  ventilation: { lot_code: "ventilation", label: "Ventilation", unit: "forfait", base_price_ht: 4500 },
+  vrd: { lot_code: "vrd", label: "VRD / Amenagements exterieurs", unit: "forfait", base_price_ht: 8500 },
+  ascenseur: { lot_code: "ascenseur", label: "Ascenseur", unit: "forfait", base_price_ht: 42000 },
+  demolition: { lot_code: "demolition", label: "Demolition", unit: "m2", base_price_ht: 55 },
+  curage: { lot_code: "curage", label: "Curage", unit: "m2", base_price_ht: 40 },
+  reprises_structurelles: { lot_code: "reprises_structurelles", label: "Reprises structurelles", unit: "m2", base_price_ht: 120 },
+  heat_pump: { lot_code: "heat_pump", label: "Pompe a chaleur", unit: "forfait", base_price_ht: 14500 },
+  double_flux: { lot_code: "double_flux", label: "VMC double flux", unit: "forfait", base_price_ht: 6500 },
+  escalier: { lot_code: "escalier", label: "Escalier", unit: "u", base_price_ht: 6500 },
+};

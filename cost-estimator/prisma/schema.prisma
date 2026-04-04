@@ -187,6 +187,11 @@ model ProjectVersion {
   ventilationType    String              @default("simple")
   roofType           String              @default("pitched")
   hasElevator        Boolean             @default(false)
+  energyPackage      String?             // "RE2020_standard" | "RE2020_advanced"
+  siteAccess         String?             // "easy" | "difficult" | "very_difficult"
+  bathroomCount      Int                 @default(0)
+  hasKitchen         Boolean             @default(false)
+  buildingAge        String?             // "pre_1948" | "post_1948"
   contingencyRate    Float               @default(0.08)
   overheadRate       Float               @default(0.05)
   profitRate         Float               @default(0.08)
@@ -352,10 +357,15 @@ model CalculationRule {
   id                String          @id @default(cuid())
   ruleCode          String          @unique
   name              String
+  labelFr           String?
+  labelTr           String?
   ruleType          String          @default("condition")
   inputSchemaJson   String?
   formulaExpression String?
   outputTarget      String?
+  conditionJson     String?         // JSON object for condition evaluation
+  actionJson        String?         // JSON object for action effects
+  regionScope       String?         // "IDF" | "major_city" | "ALL" | null
   priority          Int             @default(0)
   isActive          Boolean         @default(true)
   countryId         String?

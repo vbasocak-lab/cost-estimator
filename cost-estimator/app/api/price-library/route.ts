@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Body must be a JSON object" }, { status: 400 });
   }
 
-  const { id, basePriceHt, mode, percentage, lotCode } = body as Record<string, unknown>;
+  const { id, basePriceHt, mode, percentage, lotCode, currentIndex, referenceIndex } = body as Record<string, unknown>;
 
   if (mode === "bulk") {
     const pct = Number(percentage);
@@ -106,6 +106,76 @@ export async function PUT(req: NextRequest) {
       updatedCount: items.length,
       ids: items.map((i) => i.id),
       percentage: pct,
+    });
+  }
+
+  if (mode === "index") {
+    const current = Number(currentIndex);
+    const reference = Number(referenceIndex);
+
+    if (!Number.isFinite(current) || current <= 0) {
+      return NextResponse.json(
+        { error: "'currentIndex' must be a valid positive number" },
+        { status: 400 }
+      );
+    }
+
+    if (!Number.isFinite(reference) || reference <= 0) {
+      return NextResponse.json(
+        { error: "'referenceIndex' must be a valid positive number" },
+        { status: 400 }
+      );
+    }
+
+    const multiplier = current / reference;
+    const whereClause = {
+      isActive: true,
+      ...(typeof lotCode === "string" && lotCode !== "all"
+        ? { costLot: { code: lotCode } }
+        : {}),
+    } as const;
+
+    const items = await prisma.priceItem.findMany({
+      where: whereClause,
+      select: { id: true, basePriceHt: true },
+    });
+
+    if (items.length === 0) {
+      return NextResponse.json({ updatedCount: 0, ids: [] });
+    }
+
+    await prisma.$transaction(
+      items.map((item) => {
+        const indexedPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
+        return prisma.priceItem.update({
+          where: { id: item.id },
+          data: { basePriceHt: indexedPrice },
+        });
+      })
+    );
+
+    await prisma.$transaction(
+      items.map((item) => {
+        const indexedPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
+        return prisma.priceUpdateLog.create({
+          data: {
+            priceItemId: item.id,
+            oldPriceHt: item.basePriceHt,
+            newPriceHt: indexedPrice,
+            updateMethod: "index_formula",
+            indexRef: `${current}/${reference}`,
+            updatedById: session.user.id,
+          },
+        });
+      })
+    );
+
+    return NextResponse.json({
+      updatedCount: items.length,
+      ids: items.map((item) => item.id),
+      currentIndex: current,
+      referenceIndex: reference,
+      multiplier,
     });
   }
 
