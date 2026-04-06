@@ -1,0 +1,28 @@
+{
+  "lots": [
+    {
+      "id": "lot1",
+      "name": "Base Lot 1",
+      "description": "Description for Base Lot 1",
+      "quantity": 100,
+      "unit": "m2",
+      "price": 50.0
+    },
+    {
+      "id": "lot2",
+      "name": "Base Lot 2",
+      "description": "Description for Base Lot 2",
+      "quantity": 200,
+      "unit": "m2",
+      "price": 75.0
+    },
+    {
+      "id": "lot3",
+      "name": "Base Lot 3",
+      "description": "Description for Base Lot 3",
+      "quantity": 150,
+      "unit": "m2",
+      "price": 60.0
+    }
+  ]
+}

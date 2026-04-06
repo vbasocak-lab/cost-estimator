@@ -1,0 +1,27 @@
+{
+  "name": "project-defaults",
+  "version": "1.0.0",
+  "description": "A project that contains default configurations and settings.",
+  "main": "src/lib/defaults/project-defaults.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/project-defaults.git"
+  },
+  "keywords": [
+    "defaults",
+    "configuration",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^4.0.0",
+    "jest": "^26.0.0",
+    "@types/jest": "^26.0.0"
+  }
+}

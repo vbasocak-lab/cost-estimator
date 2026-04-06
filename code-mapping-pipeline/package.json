@@ -1,0 +1,26 @@
+{
+  "name": "code-mapping-pipeline",
+  "version": "1.0.0",
+  "description": "A pipeline for mapping codes based on project inputs and defined mapping rules.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "typescript": "^4.5.0",
+    "ts-node": "^10.0.0"
+  },
+  "devDependencies": {
+    "jest": "^27.0.0",
+    "ts-jest": "^27.0.0",
+    "@types/jest": "^27.0.0"
+  },
+  "keywords": [
+    "code",
+    "mapping",
+    "pipeline"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

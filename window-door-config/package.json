@@ -1,0 +1,28 @@
+{
+  "name": "window-door-config",
+  "version": "1.0.0",
+  "description": "A project for managing window and door configurations.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "typescript": "^4.5.4",
+    "ts-node": "^10.4.0",
+    "jest": "^27.0.6",
+    "@types/jest": "^27.0.2",
+    "@types/node": "^16.11.7"
+  },
+  "keywords": [
+    "window",
+    "door",
+    "configuration",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

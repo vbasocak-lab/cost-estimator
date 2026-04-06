@@ -36,8 +36,8 @@ export default async function ProjectDetailPage({
       buildingUse: { include: { translations: { where: { languageCode: locale } } } },
       versions: {
         include: {
-          finishLevel: true,
-          energyStandard: true,
+          finishLevelRef: true,
+          energyStandardRef: true,
           structureSystem: true,
           calculationResults: {
             orderBy: { createdAt: "desc" },

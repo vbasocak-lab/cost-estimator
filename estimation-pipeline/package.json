@@ -1,0 +1,26 @@
+{
+  "name": "estimation-pipeline",
+  "version": "1.0.0",
+  "description": "A pipeline for estimating project costs based on various inputs and rules.",
+  "main": "src/app.ts",
+  "scripts": {
+    "start": "ts-node src/app.ts",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ts-node": "^10.0.0",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "jest": "^27.0.0",
+    "ts-jest": "^27.0.0",
+    "@types/jest": "^27.0.0"
+  },
+  "keywords": [
+    "estimation",
+    "pipeline",
+    "typescript"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

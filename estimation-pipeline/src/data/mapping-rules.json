@@ -1,0 +1,22 @@
+{
+  "mappingRules": {
+    "inputToLot": {
+      "projectName": "lotName",
+      "projectLocation": "lotLocation",
+      "projectBudget": "lotBudget"
+    },
+    "lotToArticle": {
+      "lotName": "articleName",
+      "lotQuantity": "articleQuantity"
+    },
+    "articleToEstimation": {
+      "articleName": "estimationArticleName",
+      "articleCost": "estimationArticleCost"
+    }
+  },
+  "defaultValues": {
+    "lotBudget": 0,
+    "articleQuantity": 1,
+    "estimationArticleCost": 0
+  }
+}

@@ -51,6 +51,7 @@ model Country {
   projects             Project[]
   regions              Region[]
   regionalCoefficients RegionalCoefficient[]
+  priceMappings        PriceCodeMapping[]
 }
 
 model Region {
@@ -185,10 +186,53 @@ model ProjectVersion {
   energyPackage      String?
   hasKitchen         Boolean             @default(false)
   siteAccess         String?
+  // Dynamic configurator fields
+  buildingUsage       String   @default("single_family")
+  estimationMode      String   @default("standard")
+  surfaceShonM2       Float    @default(0)
+  surfaceShabM2       Float    @default(0)
+  aboveGroundFloors   Int      @default(1)
+  basementFloors      Int      @default(0)
+  bedroomCount        Int      @default(0)
+  wcCount             Int      @default(0)
+  roomCount           Int      @default(0)
+  hasStair            Boolean  @default(false)
+  stairType           String   @default("straight")
+  stairFinish         String   @default("wood")
+  structureType       String   @default("concrete")
+  energyStandard      String   @default("re2020")
+  heatingSystem       String   @default("gas")
+  heatingDistribution String   @default("radiators")
+  electricLevel       String   @default("standard")
+  elevatorRequired    Boolean  @default(false)
+  windowAreaRatio     Float    @default(0.15)
+  windowGlazingType   String   @default("double")
+  windowFrameType     String   @default("pvc")
+  windowOpeningType   String   @default("casement")
+  roofWindowCount     Int      @default(0)
+  doorWindowType      String   @default("standard")
+  interiorDoorCount   Int      @default(0)
+  interiorDoorType    String   @default("standard")
+  bathroomLevel       String   @default("standard")
+  bathroomType        String   @default("shower")
+  wcType              String   @default("suspended")
+  showerType          String   @default("standard")
+  vanityType          String   @default("standard")
+  bathtubType         String   @default("standard")
+  kitchenType         String   @default("standard")
+  kitchenCredenceType String   @default("tile")
+  hasBuanderie        Boolean  @default(false)
+  hasCellier          Boolean  @default(false)
+  cellierStorageLevel String   @default("none")
+  finishLevel         String   @default("standard")
+  riskPercent         Float    @default(8)
+  overheadPercent     Float    @default(5)
+  profitPercent       Float    @default(8)
+  vatPercent          Float    @default(20)
   calculationResults CalculationResult[]
   inputs             ProjectInput[]
-  energyStandard     EnergyStandard?     @relation(fields: [energyStandardId], references: [id])
-  finishLevel        FinishLevel?        @relation(fields: [finishLevelId], references: [id])
+  energyStandardRef  EnergyStandard?     @relation(fields: [energyStandardId], references: [id])
+  finishLevelRef     FinishLevel?        @relation(fields: [finishLevelId], references: [id])
   project            Project             @relation(fields: [projectId], references: [id])
   renovationScope    RenovationScope?    @relation(fields: [renovationScopeId], references: [id])
   structureSystem    StructureSystem?    @relation(fields: [structureSystemId], references: [id])
@@ -406,4 +450,23 @@ model Report {
   generatedAt      DateTime       @default(now())
   generatedBy      User?          @relation(fields: [generatedById], references: [id])
   projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id])
+}
+
+model PriceCodeMapping {
+  id            String   @id @default(cuid())
+  inputKey      String
+  inputValue    String
+  targetLot     String
+  defaultCodes  String[]
+  overrideCodes String[]
+  replaceMode   String   @default("merge")
+  quantityMode  String   @default("auto")
+  quantityValue Float?
+  priority      Int      @default(0)
+  isActive      Boolean  @default(true)
+  countryId     String?
+  country       Country? @relation(fields: [countryId], references: [id])
+
+  @@index([inputKey, inputValue, isActive])
+  @@index([targetLot, isActive])
 }

@@ -16,6 +16,7 @@ export interface ProjectVersionInput {
   energyStandardCode?: string;
   energyPackage?: string;   // RE2020_standard | RE2020_advanced
   heatingType: string;
+  heatingDistribution?: string; // radiators | floor_heating
   ventilationType: string;
   hasElevator: boolean;
   contingencyRate: number;
@@ -25,9 +26,37 @@ export interface ProjectVersionInput {
   // New project-level inputs for rule evaluation
   siteAccess?: string;      // easy | difficult | very_difficult
   bathroomCount?: number;
+  wcCount?: number;
+  bedroomCount?: number;
   hasKitchen?: boolean;
   buildingAge?: string;     // pre_1948 | post_1948
   floorsAboveGround_raw?: number;
+  // Dynamic configurator fields
+  structureType?: string;   // concrete | masonry | stone | steel | timber | mixed
+  roofType?: string;        // pitched | flat | slate | green_roof | mixed
+  electricLevel?: string;   // standard | premium | domotic
+  windowGlazingType?: string;
+  windowFrameType?: string;
+  windowOpeningType?: string;
+  windowAreaRatio?: number;
+  roofWindowCount?: number;
+  interiorDoorCount?: number;
+  interiorDoorType?: string;
+  hasStair?: boolean;
+  stairType?: string;
+  stairFinish?: string;
+  bathroomLevel?: string;
+  bathroomType?: string;
+  wcType?: string;
+  showerType?: string;
+  vanityType?: string;
+  bathtubType?: string;
+  kitchenType?: string;
+  kitchenCredenceType?: string;
+  hasBuanderie?: boolean;
+  hasCellier?: boolean;
+  cellierStorageLevel?: string;
+  finishLevel?: string;
 }
 
 export interface LotPriceData {

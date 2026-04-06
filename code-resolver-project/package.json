@@ -1,0 +1,30 @@
+{
+  "name": "code-resolver-project",
+  "version": "1.0.0",
+  "description": "A project for resolving codes and managing mappings.",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/code-resolver-project.git"
+  },
+  "keywords": [
+    "code",
+    "resolver",
+    "mapping"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.5.4",
+    "jest": "^27.0.6",
+    "@types/jest": "^27.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "ts-jest": "^27.0.6"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,29 @@
+export interface MappingData {
+    id: string;
+    value: number;
+    description?: string;
+}
+
+export class MappingEngine {
+    private mappings: MappingData[];
+
+    constructor() {
+        this.mappings = [];
+    }
+
+    public addMapping(mapping: MappingData): void {
+        this.mappings.push(mapping);
+    }
+
+    public getMapping(id: string): MappingData | undefined {
+        return this.mappings.find(mapping => mapping.id === id);
+    }
+
+    public getAllMappings(): MappingData[] {
+        return this.mappings;
+    }
+
+    public clearMappings(): void {
+        this.mappings = [];
+    }
+}

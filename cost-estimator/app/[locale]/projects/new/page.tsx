@@ -22,19 +22,40 @@ interface WizardData {
   commonAreaRatio: number;
   facadeComplexity: string;
   roofType: string;
-  // Step 3
+  // Step 3 - Technical profile
   structureSystemCode: string;
   heatingType: string;
+  heatingDistribution: string;
   ventilationType: string;
   electricalLevel: string;
   hasElevator: boolean;
   energyStandardCode: string;
-  // Step 4
+  // Step 4 - Program + Finish
   finishLevelCode: string;
   contingencyRate: number;
   overheadRate: number;
   profitRate: number;
   vatRate: number;
+  // Step 4 - New fields
+  bathroomCount: number;
+  wcCount: number;
+  bedroomCount: number;
+  hasStair: boolean;
+  stairType: string;
+  stairFinish: string;
+  kitchenType: string;
+  kitchenCredenceType: string;
+  hasBuanderie: boolean;
+  hasCellier: boolean;
+  cellierStorageLevel: string;
+  windowGlazingType: string;
+  windowFrameType: string;
+  windowOpeningType: string;
+  windowAreaRatio: number;
+  roofWindowCount: number;
+  interiorDoorType: string;
+  bathroomLevel: string;
+  bathroomType: string;
   // Step 5
   label: string;
 }
@@ -150,6 +171,7 @@ export default function NewProjectPage() {
     roofType: "pitched",
     structureSystemCode: "concrete",
     heatingType: "gas",
+    heatingDistribution: "radiators",
     ventilationType: "simple",
     electricalLevel: "standard",
     hasElevator: false,
@@ -159,6 +181,26 @@ export default function NewProjectPage() {
     overheadRate: 5,
     profitRate: 8,
     vatRate: 20,
+    // New fields
+    bathroomCount: 1,
+    wcCount: 1,
+    bedroomCount: 2,
+    hasStair: false,
+    stairType: "straight",
+    stairFinish: "wood",
+    kitchenType: "standard",
+    kitchenCredenceType: "tile",
+    hasBuanderie: false,
+    hasCellier: false,
+    cellierStorageLevel: "none",
+    windowGlazingType: "double",
+    windowFrameType: "pvc",
+    windowOpeningType: "casement",
+    windowAreaRatio: 0.15,
+    roofWindowCount: 0,
+    interiorDoorType: "standard",
+    bathroomLevel: "standard",
+    bathroomType: "shower",
     label: "V1",
   });
 
@@ -204,27 +246,79 @@ export default function NewProjectPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          // Version label
           label: data.label,
+          regionCode: data.regionCode,
+          // Surface (canonical names used by API route)
           grossAreaM2: effectiveGrossAreaM2,
           netAreaM2: data.netAreaM2 || effectiveGrossAreaM2 * 0.85,
+          surfaceShonM2: effectiveGrossAreaM2,
+          surfaceShabM2: data.netAreaM2 || effectiveGrossAreaM2 * 0.85,
+          // Floors
           floorsAboveGround: data.floorsAboveGround,
+          aboveGroundFloors: data.floorsAboveGround,
           floorsBelowGround: data.floorsBelowGround,
+          basementFloors: data.floorsBelowGround,
           commonAreaRatio: data.commonAreaRatio,
+          // Geometry
           facadeComplexity: data.facadeComplexity,
           roofType: data.roofType,
+          // Legacy relation lookups
           structureSystemCode: data.structureSystemCode,
-          heatingType: data.heatingType,
-          ventilationType: data.ventilationType,
-          electricalLevel: data.electricalLevel,
-          hasElevator: data.hasElevator,
           energyStandardCode: data.energyStandardCode,
           finishLevelCode: data.finishLevelCode,
           renovationScopeCode: "",
+          // Flat scalar equivalents (new engine uses these)
+          structureType: data.structureSystemCode,
+          energyStandard: data.energyStandardCode,
+          finishLevel: data.finishLevelCode,
+          buildingUsage: data.buildingUseCode,
+          // Heating (single canonical set)
+          heatingType: data.heatingType,
+          heatingSystem: data.heatingType,
+          heatingDistribution: data.heatingDistribution,
+          ventilationType: data.ventilationType,
+          // Electric / elevator (single canonical set)
+          electricalLevel: data.electricalLevel,
+          electricLevel: data.electricalLevel,
+          hasElevator: data.hasElevator,
+          elevatorRequired: data.hasElevator,
+          // Rates (sent as decimals — server expects 0-1 range)
           contingencyRate: data.contingencyRate / 100,
           overheadRate: data.overheadRate / 100,
           profitRate: data.profitRate / 100,
           vatRate: data.vatRate / 100,
-          regionCode: data.regionCode,
+          // New flat rate fields (server reads raw % value)
+          riskPercent: data.contingencyRate,
+          overheadPercent: data.overheadRate,
+          profitPercent: data.profitRate,
+          vatPercent: data.vatRate,
+          // Program
+          bathroomCount: data.bathroomCount,
+          wcCount: data.wcCount,
+          bedroomCount: data.bedroomCount,
+          // Stairs
+          hasStair: data.hasStair,
+          stairType: data.stairType,
+          stairFinish: data.stairFinish,
+          // Windows
+          windowGlazingType: data.windowGlazingType,
+          windowFrameType: data.windowFrameType,
+          windowOpeningType: data.windowOpeningType,
+          windowAreaRatio: data.windowAreaRatio,
+          roofWindowCount: data.roofWindowCount,
+          // Interior doors
+          interiorDoorType: data.interiorDoorType,
+          // Bathrooms
+          bathroomLevel: data.bathroomLevel,
+          bathroomType: data.bathroomType,
+          // Kitchen
+          kitchenType: data.kitchenType,
+          kitchenCredenceType: data.kitchenCredenceType,
+          // Extra rooms
+          hasBuanderie: data.hasBuanderie,
+          hasCellier: data.hasCellier,
+          cellierStorageLevel: data.cellierStorageLevel,
         }),
       });
       if (!versionRes.ok) {
@@ -490,6 +584,18 @@ export default function NewProjectPage() {
                     ]}
                   />
                   <SelectField
+                    label={t("heatingDistribution")}
+                    value={data.heatingDistribution}
+                    onChange={set("heatingDistribution")}
+                    placeholder={t("selectPlaceholder")}
+                    options={[
+                      { value: "radiators", label: t("distRadiators") },
+                      { value: "floor_heating", label: t("distFloorHeating") },
+                    ]}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <SelectField
                     label={t("ventilation")}
                     value={data.ventilationType}
                     onChange={set("ventilationType")}
@@ -499,8 +605,6 @@ export default function NewProjectPage() {
                       { value: "double_flow", label: t("ventDouble") },
                     ]}
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
                   <SelectField
                     label={t("electricalLevel")}
                     value={data.electricalLevel}
@@ -511,6 +615,8 @@ export default function NewProjectPage() {
                       { value: "premium", label: t("electricalPremium") },
                     ]}
                   />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-3 pt-6">
                     <input
                       type="checkbox"

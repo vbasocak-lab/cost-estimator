@@ -21,9 +21,9 @@ export async function GET(
       buildingUse: { include: { translations: true } },
       versions: {
         include: {
-          finishLevel: true,
+          finishLevelRef: true,
           renovationScope: true,
-          energyStandard: true,
+          energyStandardRef: true,
           structureSystem: true,
           calculationResults: { orderBy: { createdAt: "desc" }, take: 1 },
         },
