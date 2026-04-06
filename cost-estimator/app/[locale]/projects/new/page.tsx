@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { generateDefaultProgram } from "@/lib/engine/project-defaults";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface WizardData {
@@ -40,6 +41,8 @@ interface WizardData {
   bathroomCount: number;
   wcCount: number;
   bedroomCount: number;
+  roomCount: number;
+  interiorDoorCount: number;
   hasStair: boolean;
   stairType: string;
   stairFinish: string;
@@ -185,6 +188,8 @@ export default function NewProjectPage() {
     bathroomCount: 1,
     wcCount: 1,
     bedroomCount: 2,
+    roomCount: 4,
+    interiorDoorCount: 5,
     hasStair: false,
     stairType: "straight",
     stairFinish: "wood",
@@ -213,6 +218,24 @@ export default function NewProjectPage() {
       : rawValue;
     setData((prev) => ({ ...prev, [field]: val }));
   };
+
+  // Auto-compute default program values when SHAB changes
+  useEffect(() => {
+    const shab = data.netAreaM2 > 0 ? data.netAreaM2 : data.grossAreaM2 * 0.85;
+    if (shab > 0) {
+      const defaults = generateDefaultProgram(shab, data.floorsAboveGround);
+      setData((prev) => ({
+        ...prev,
+        bedroomCount: defaults.bedroomCount,
+        bathroomCount: defaults.bathroomCount,
+        wcCount: defaults.wcCount,
+        roomCount: defaults.roomCount,
+        interiorDoorCount: defaults.interiorDoorCount,
+        hasStair: defaults.hasStair,
+        kitchenType: defaults.kitchenType,
+      }));
+    }
+  }, [data.grossAreaM2, data.netAreaM2, data.floorsAboveGround]);
 
   const STEPS = [t("step1"), t("step2"), t("step3"), t("step4"), t("step5")];
   const effectiveGrossAreaM2 = data.grossAreaM2 > 0 ? data.grossAreaM2 : data.netAreaM2;
@@ -297,6 +320,8 @@ export default function NewProjectPage() {
           bathroomCount: data.bathroomCount,
           wcCount: data.wcCount,
           bedroomCount: data.bedroomCount,
+          roomCount: data.roomCount,
+          interiorDoorCount: data.interiorDoorCount,
           // Stairs
           hasStair: data.hasStair,
           stairType: data.stairType,
