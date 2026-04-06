@@ -47,7 +47,17 @@
     "totalProjects": "Total projects",
     "activeEstimates": "Active estimates",
     "lastIndex": "Latest BT Index",
-    "noProjects": "No projects yet. Create your first project."
+    "noProjects": "No projects yet. Create your first project.",
+    "indicesTitle": "Construction indices",
+    "indexBt01": "General construction",
+    "indexBt50": "Secondary works",
+    "indexBt54": "Technical installations",
+    "indexIcc": "Construction cost index",
+    "indexBt02": "Structural works"
+  },
+  "brand": {
+    "appName": "EA CostEstimator",
+    "edition": "Edition"
   },
   "projects": {
     "title": "Projects",
@@ -257,6 +267,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
+    "viewAll": "View all",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",

@@ -58,6 +58,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
+  if (body.leadEmail || body.leadPhone) {
+    await prisma.$executeRaw`
+      UPDATE "Project"
+      SET "leadEmail" = ${body.leadEmail || null},
+          "leadPhone" = ${body.leadPhone || null}
+      WHERE "id" = ${project.id}
+    `;
+  }
+
   // Create initial version
   await prisma.projectVersion.create({
     data: {

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Prisma } from "@prisma/client";
 
 function formatCurrency(val: number, locale: string) {
   return new Intl.NumberFormat(locale, { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(val);
@@ -18,29 +19,53 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const session = await auth();
   if (!session) redirect(`/${locale}/login`);
 
-  const [projects, latestIndex] = await Promise.all([
-    prisma.project.findMany({
-      where: { ownerUserId: session.user.id },
-      include: {
-        region: { select: { name: true } },
-        projectType: { include: { translations: { where: { languageCode: locale } } } },
-        versions: {
-          where: { isCurrent: true },
-          include: { calculationResults: { orderBy: { createdAt: "desc" }, take: 1 } },
+  let projects: any[] = [];
+  let latestIndex: { value: number; periodDate: Date } | null = null;
+
+  try {
+    [projects, latestIndex] = await Promise.all([
+      prisma.project.findMany({
+        where: { ownerUserId: session.user.id },
+        include: {
+          region: { select: { name: true } },
+          projectType: { include: { translations: { where: { languageCode: locale } } } },
+          versions: {
+            where: { isCurrent: true },
+            include: { calculationResults: { orderBy: { createdAt: "desc" }, take: 1 } },
+          },
         },
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 10,
-    }),
-    prisma.marketIndex.findFirst({
-      where: { code: "BT01" },
-      orderBy: { periodDate: "desc" },
-    }),
-  ]);
+        orderBy: { updatedAt: "desc" },
+        take: 10,
+      }),
+      prisma.marketIndex.findFirst({
+        where: { code: "BT01" },
+        orderBy: { periodDate: "desc" },
+      }),
+    ]);
+  } catch {
+    // Keep dashboard accessible when DB env is missing/invalid on production.
+  }
 
   const activeEstimates = projects.filter(
-    (p) => p.versions.some((v) => v.calculationResults.length > 0)
+    (p) => p.versions.some((v: any) => v.calculationResults.length > 0)
   ).length;
+
+  const projectIds = projects.map((project) => project.id);
+  let leadContacts: Array<{ id: string; leadEmail: string | null; leadPhone: string | null }> = [];
+  if (projectIds.length) {
+    try {
+      leadContacts = await prisma.$queryRaw<Array<{ id: string; leadEmail: string | null; leadPhone: string | null }>>`
+        SELECT "id", "leadEmail", "leadPhone"
+        FROM "Project"
+        WHERE "id" IN (${Prisma.join(projectIds)})
+      `;
+    } catch {
+      leadContacts = [];
+    }
+  }
+  const leadContactByProjectId = new Map(
+    leadContacts.map((contact) => [contact.id, contact])
+  );
 
   return (
     <div className="max-w-6xl">
@@ -106,21 +131,21 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             {projects.map((project) => {
               const currentVersion = project.versions[0];
               const lastResult = currentVersion?.calculationResults[0];
+              const leadContact = leadContactByProjectId.get(project.id);
               return (
-                <Link
+                <div
                   key={project.id}
-                  href={`/${locale}/projects/${project.id}`}
                   className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex-1">
+                  <Link href={`/${locale}/projects/${project.id}`} className="flex-1 min-w-0">
                     <div className="font-medium text-gray-900">{project.projectName}</div>
                     <div className="text-sm text-gray-500 mt-0.5 flex items-center gap-3">
                       <span>{project.projectType?.translations[0]?.label || "—"}</span>
                       {project.region && <span>· {project.region.name}</span>}
                       <span>· {new Date(project.updatedAt).toLocaleDateString(locale)}</span>
                     </div>
-                  </div>
-                  <div className="text-right">
+                  </Link>
+                  <div className="text-right ml-4">
                     {lastResult ? (
                       <>
                         <div className="font-semibold text-gray-900">
@@ -136,8 +161,30 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                       </span>
                     )}
                   </div>
-                  <div className="ml-4 text-gray-400">›</div>
-                </Link>
+                  <div className="ml-4 flex flex-col items-end gap-2">
+                    <Link href={`/${locale}/projects/${project.id}`} className="text-gray-400 hover:text-gray-600">›</Link>
+                    {(leadContact?.leadEmail || leadContact?.leadPhone) && (
+                      <div className="flex flex-col items-end gap-1 text-xs">
+                        {leadContact?.leadEmail && (
+                          <a
+                            href={`mailto:${leadContact.leadEmail}`}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            {leadContact.leadEmail}
+                          </a>
+                        )}
+                        {leadContact?.leadPhone && (
+                          <a
+                            href={`tel:${leadContact.leadPhone}`}
+                            className="text-blue-600 hover:text-blue-700"
+                          >
+                            {leadContact.leadPhone}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               );
             })}
           </div>

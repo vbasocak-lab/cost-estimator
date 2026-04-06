@@ -50,65 +50,6 @@ export async function PUT(req: NextRequest) {
 
   const { id, basePriceHt, mode, percentage, lotCode, currentIndex, referenceIndex } = body as Record<string, unknown>;
 
-  if (mode === "bulk") {
-    const pct = Number(percentage);
-    if (!Number.isFinite(pct) || pct < -90 || pct > 500) {
-      return NextResponse.json(
-        { error: "'percentage' must be a valid number between -90 and 500" },
-        { status: 400 }
-      );
-    }
-
-    const multiplier = 1 + pct / 100;
-    const whereClause = {
-      isActive: true,
-      ...(typeof lotCode === "string" && lotCode !== "all"
-        ? { costLot: { code: lotCode } }
-        : {}),
-    } as const;
-
-    const items = await prisma.priceItem.findMany({
-      where: whereClause,
-      select: { id: true, basePriceHt: true },
-    });
-
-    if (items.length === 0) {
-      return NextResponse.json({ updatedCount: 0, ids: [] });
-    }
-
-    await prisma.$transaction(
-      items.map((item) => {
-        const newPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
-        return prisma.priceItem.update({
-          where: { id: item.id },
-          data: { basePriceHt: newPrice },
-        });
-      })
-    );
-
-    await prisma.$transaction(
-      items.map((item) => {
-        const newPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
-        return prisma.priceUpdateLog.create({
-          data: {
-            priceItemId: item.id,
-            oldPriceHt: item.basePriceHt,
-            newPriceHt: newPrice,
-            updateMethod: "bulk_percent",
-            indexRef: `${pct}%`,
-            updatedById: session.user.id,
-          },
-        });
-      })
-    );
-
-    return NextResponse.json({
-      updatedCount: items.length,
-      ids: items.map((i) => i.id),
-      percentage: pct,
-    });
-  }
-
   if (mode === "index") {
     const current = Number(currentIndex);
     const reference = Number(referenceIndex);

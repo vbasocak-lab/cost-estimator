@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 
 const ADMIN_ROLES = ["admin", "manager"];
 
@@ -21,6 +22,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const tNav = useTranslations("nav");
+  const [isRestrictedAccess, setIsRestrictedAccess] = useState(false);
 
   const locale =
     LOCALES.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? "fr";
@@ -28,6 +30,30 @@ export default function Sidebar() {
   const role = String(session?.user?.role ?? "admin").toLowerCase();
   const isAdmin = ADMIN_ROLES.includes(role);
   const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+  // Keep full access for authenticated internal users.
+  useEffect(() => {
+    if (session) {
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("restrictedAccess");
+      }
+      setIsRestrictedAccess(false);
+      return;
+    }
+
+    // For anonymous visitors (WordPress lead flow), keep restriction marker.
+    const sessionRestricted =
+      typeof window !== "undefined" && sessionStorage.getItem("restrictedAccess") === "true";
+    const cookieRestricted =
+      typeof window !== "undefined" && document.cookie.includes("restrictedAccess=true");
+
+    setIsRestrictedAccess(sessionRestricted || cookieRestricted);
+  }, [session]);
+
+  // If restricted access, hide sidebar navigation
+  if (isRestrictedAccess) {
+    return null;
+  }
 
   const visibleItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 

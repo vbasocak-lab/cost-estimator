@@ -1,97 +1,96 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 
 export default function ReportPage() {
-  const tProjects = useTranslations("projects");
-  const tResults = useTranslations("results");
   const params = useParams();
-  const searchParams = useSearchParams();
   const locale = params.locale as string;
   const projectId = params.id as string;
-  const format = searchParams.get("format");
-
-  const [versionId, setVersionId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch(`/api/projects/${projectId}`)
-      .then((r) => r.json())
-      .then((project) => {
-        const currentVersion = project.versions?.find((v: any) => v.isCurrent);
-        setVersionId(currentVersion?.id || null);
-        setLoading(false);
-      });
-  }, [projectId]);
-
-  useEffect(() => {
-    if (!versionId || !format) return;
-
-    if (format === "excel") {
-      window.open(`/api/reports/excel?versionId=${versionId}`, "_blank");
-      return;
-    }
-
-    if (format === "pdf") {
-      window.open(`/api/reports/pdf?versionId=${versionId}`, "_blank");
-    }
-  }, [format, versionId]);
-
-  const handleExcel = () => {
-    if (!versionId) return;
-    window.open(`/api/reports/excel?versionId=${versionId}`, "_blank");
-  };
-
-  const handlePdf = () => {
-    if (!versionId) return;
-    window.open(`/api/reports/pdf?versionId=${versionId}`, "_blank");
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-gray-500">{tProjects("loading")}</div>
-      </div>
-    );
-  }
 
   return (
-    <div className="max-w-2xl mx-auto py-16 text-center">
-      <div className="text-6xl mb-6">📄</div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-3">{tProjects("exportReportTitle")}</h1>
-      <p className="text-gray-500 mb-8">{tProjects("exportReportDescription")}</p>
+    <div className="max-w-4xl mx-auto py-12 px-4">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 md:p-10">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+          Informations importantes concernant votre estimation de coûts
+        </h1>
 
-      <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-        <button
-          onClick={handlePdf}
-          disabled={!versionId}
-          className="flex flex-col items-center gap-3 p-6 bg-red-50 border-2 border-red-200 rounded-2xl hover:border-red-400 transition-colors disabled:opacity-50"
-        >
-          <span className="text-4xl">📋</span>
-          <span className="font-semibold text-red-800">{tResults("exportPdf")}</span>
-          <span className="text-xs text-red-600">{tProjects("pdfHint")}</span>
-        </button>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Important : Estimation provisoire</h2>
+        <p className="text-gray-700 leading-7 mb-6">
+          Il s&apos;agit d&apos;une estimation budgétaire provisoire. Les coûts réels dépendent, entre autres,
+          des études techniques, des conditions du terrain, des réglementations locales (PLU) et des offres
+          des entreprises exécutantes. Cette estimation est non contractuelle et ne constitue pas une offre
+          commerciale. Les coûts réels du projet peuvent varier en fonction de la planification détaillée,
+          des exigences techniques, des choix architecturaux et des normes locales en vigueur.
+        </p>
 
-        <button
-          onClick={handleExcel}
-          disabled={!versionId}
-          className="flex flex-col items-center gap-3 p-6 bg-green-50 border-2 border-green-200 rounded-2xl hover:border-green-400 transition-colors disabled:opacity-50"
-        >
-          <span className="text-4xl">📊</span>
-          <span className="font-semibold text-green-800">{tResults("exportExcel")}</span>
-          <span className="text-xs text-green-600">{tProjects("excelHint")}</span>
-        </button>
-      </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Souhaitez-vous développer votre projet ?</h2>
+        <p className="text-gray-700 leading-7 mb-4">
+          ÉLAN Architecture vous accompagne dans le développement global de votre projet – des premières idées
+          à la réalisation. Notre approche ne se limite pas aux coûts. Nous intégrons la qualité architecturale,
+          la durabilité, l&apos;efficacité énergétique et le contrôle budgétaire dès les premières phases de conception.
+        </p>
 
-      <div className="mt-8">
+        <p className="text-gray-800 font-medium mb-3">Nous vous proposons :</p>
+        <ul className="list-disc pl-6 text-gray-700 leading-7 mb-6 space-y-1">
+          <li>Une analyse de faisabilité approfondie</li>
+          <li>Un accompagnement pour la définition du programme et des besoins</li>
+          <li>Une conception architecturale optimisée</li>
+          <li>Une stratégie de maîtrise des coûts dès la phase d&apos;esquisse</li>
+        </ul>
+
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Offre de bienvenue :</h2>
+        <p className="text-gray-700 leading-7 mb-6">
+          Pour toute demande via cette plateforme, nous offrons une remise de 20 % sur votre première étude
+          de faisabilité ou votre première consultation architecturale.
+        </p>
+
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">FAQ – Questions fréquemment posées</h2>
+
+        <div className="space-y-4 text-gray-700 leading-7 mb-6">
+          <div>
+            <p className="font-semibold text-gray-900">Cette estimation est-elle fiable ?</p>
+            <p>
+              Il s&apos;agit d&apos;une estimation basée sur des données réelles du marché. Elle sert d&apos;orientation
+              initiale, mais ne remplace en aucun cas une étude de projet détaillée.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-semibold text-gray-900">Les honoraires d&apos;architecte sont-ils inclus ?</p>
+            <p>
+              Non. Cette estimation concerne principalement les coûts de construction prévisionnels.
+              Les honoraires dépendent de l&apos;ampleur du projet et du niveau d&apos;accompagnement souhaité.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-semibold text-gray-900">Le résultat est-il valable pour toute la France ?</p>
+            <p>
+              Oui, sous réserve d&apos;ajustements régionaux. Dans certaines zones, notamment en Île-de-France,
+              les coûts sont généralement plus élevés.
+            </p>
+          </div>
+
+          <div>
+            <p className="font-semibold text-gray-900">Peut-on construire directement avec ce budget ?</p>
+            <p>
+              Cette estimation est un point de départ. Pour valider la faisabilité et établir un budget définitif,
+              une étude architecturale approfondie est indispensable.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-gray-900 font-medium leading-7 mb-8">
+          Chaque projet est unique. Une estimation est un point de départ – un projet de qualité commence
+          par une planification rigoureuse.
+        </p>
+
         <Link
           href={`/${locale}/projects/${projectId}`}
-          className="text-sm text-blue-600 hover:text-blue-700"
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700"
         >
-          {tProjects("backToProject")}
+          Retour au projet
         </Link>
       </div>
     </div>

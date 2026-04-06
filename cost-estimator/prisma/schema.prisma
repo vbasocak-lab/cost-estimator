@@ -9,8 +9,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ─── USER & COMPANY ───────────────────────────────────────────────────────────
-
 model Company {
   id              String    @id @default(cuid())
   legalName       String
@@ -20,8 +18,8 @@ model Company {
   currencyCode    String    @default("EUR")
   defaultLanguage String    @default("fr")
   createdAt       DateTime  @default(now())
-  users           User[]
   projects        Project[]
+  users           User[]
 }
 
 model User {
@@ -33,15 +31,13 @@ model User {
   role              String           @default("estimator")
   preferredLanguage String           @default("fr")
   companyId         String?
-  company           Company?         @relation(fields: [companyId], references: [id])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
+  priceUpdateLogs   PriceUpdateLog[]
   projects          Project[]
   reports           Report[]
-  priceUpdateLogs   PriceUpdateLog[]
+  company           Company?         @relation(fields: [companyId], references: [id])
 }
-
-// ─── GEOGRAPHY ────────────────────────────────────────────────────────────────
 
 model Country {
   id                   String                @id @default(cuid())
@@ -49,45 +45,43 @@ model Country {
   name                 String
   defaultCurrency      String                @default("EUR")
   defaultVatRate       Float                 @default(0.20)
-  regions              Region[]
-  projects             Project[]
-  priceItems           PriceItem[]
-  marketIndices        MarketIndex[]
-  regionalCoefficients RegionalCoefficient[]
   calculationRules     CalculationRule[]
+  marketIndices        MarketIndex[]
+  priceItems           PriceItem[]
+  projects             Project[]
+  regions              Region[]
+  regionalCoefficients RegionalCoefficient[]
 }
 
 model Region {
   id                   String                @id @default(cuid())
   countryId            String
-  country              Country               @relation(fields: [countryId], references: [id])
   code                 String
   name                 String
   coefficientDefault   Float                 @default(1.0)
-  projects             Project[]
   priceItems           PriceItem[]
+  projects             Project[]
+  country              Country               @relation(fields: [countryId], references: [id])
   regionalCoefficients RegionalCoefficient[]
 
   @@unique([countryId, code])
 }
 
-// ─── CLASSIFICATIONS ──────────────────────────────────────────────────────────
-
 model ProjectType {
   id           String                   @id @default(cuid())
   code         String                   @unique
   sortOrder    Int                      @default(0)
-  translations ProjectTypeTranslation[]
   projects     Project[]
+  translations ProjectTypeTranslation[]
 }
 
 model ProjectTypeTranslation {
   id            String      @id @default(cuid())
   projectTypeId String
-  projectType   ProjectType @relation(fields: [projectTypeId], references: [id])
   languageCode  String
   label         String
   description   String?
+  projectType   ProjectType @relation(fields: [projectTypeId], references: [id])
 }
 
 model BuildingUse {
@@ -100,26 +94,26 @@ model BuildingUse {
 model BuildingUseTranslation {
   id            String      @id @default(cuid())
   buildingUseId String
-  buildingUse   BuildingUse @relation(fields: [buildingUseId], references: [id])
   languageCode  String
   label         String
+  buildingUse   BuildingUse @relation(fields: [buildingUseId], references: [id])
 }
 
 model FinishLevel {
-  id                   String               @id @default(cuid())
-  code                 String               @unique
-  coefficient          Float                @default(1.0)
-  projectVersions      ProjectVersion[]
-  priceItems           PriceItem[]
-  qualityCoefficients  QualityCoefficient[]
+  id                  String               @id @default(cuid())
+  code                String               @unique
+  coefficient         Float                @default(1.0)
+  priceItems          PriceItem[]
+  projectVersions     ProjectVersion[]
+  qualityCoefficients QualityCoefficient[]
 }
 
 model RenovationScope {
   id              String           @id @default(cuid())
   code            String           @unique
   coefficient     Float            @default(1.0)
-  projectVersions ProjectVersion[]
   priceItems      PriceItem[]
+  projectVersions ProjectVersion[]
 }
 
 model EnergyStandard {
@@ -136,35 +130,32 @@ model StructureSystem {
   projectVersions ProjectVersion[]
 }
 
-// ─── PROJECT ──────────────────────────────────────────────────────────────────
-
 model Project {
   id            String           @id @default(cuid())
   companyId     String?
-  company       Company?         @relation(fields: [companyId], references: [id])
   ownerUserId   String
-  owner         User             @relation(fields: [ownerUserId], references: [id])
   projectName   String
   countryId     String
-  country       Country          @relation(fields: [countryId], references: [id])
   regionId      String?
-  region        Region?          @relation(fields: [regionId], references: [id])
   city          String?
   postalCode    String?
   projectTypeId String?
-  projectType   ProjectType?     @relation(fields: [projectTypeId], references: [id])
   buildingUseId String?
-  buildingUse   BuildingUse?     @relation(fields: [buildingUseId], references: [id])
   status        String           @default("draft")
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
+  buildingUse   BuildingUse?     @relation(fields: [buildingUseId], references: [id])
+  company       Company?         @relation(fields: [companyId], references: [id])
+  country       Country          @relation(fields: [countryId], references: [id])
+  owner         User             @relation(fields: [ownerUserId], references: [id])
+  projectType   ProjectType?     @relation(fields: [projectTypeId], references: [id])
+  region        Region?          @relation(fields: [regionId], references: [id])
   versions      ProjectVersion[]
 }
 
 model ProjectVersion {
   id                 String              @id @default(cuid())
   projectId          String
-  project            Project             @relation(fields: [projectId], references: [id])
   versionNumber      Int                 @default(1)
   label              String              @default("V1")
   grossAreaM2        Float               @default(0)
@@ -174,45 +165,44 @@ model ProjectVersion {
   commonAreaRatio    Float               @default(0.15)
   facadeComplexity   String              @default("standard")
   finishLevelId      String?
-  finishLevel        FinishLevel?        @relation(fields: [finishLevelId], references: [id])
   energyStandardId   String?
-  energyStandard     EnergyStandard?     @relation(fields: [energyStandardId], references: [id])
   structureSystemId  String?
-  structureSystem    StructureSystem?    @relation(fields: [structureSystemId], references: [id])
   renovationScopeId  String?
-  renovationScope    RenovationScope?    @relation(fields: [renovationScopeId], references: [id])
   hvacLevel          String              @default("standard")
   electricalLevel    String              @default("standard")
   heatingType        String              @default("gas")
   ventilationType    String              @default("simple")
   roofType           String              @default("pitched")
   hasElevator        Boolean             @default(false)
-  energyPackage      String?             // "RE2020_standard" | "RE2020_advanced"
-  siteAccess         String?             // "easy" | "difficult" | "very_difficult"
-  bathroomCount      Int                 @default(0)
-  hasKitchen         Boolean             @default(false)
-  buildingAge        String?             // "pre_1948" | "post_1948"
   contingencyRate    Float               @default(0.08)
   overheadRate       Float               @default(0.05)
   profitRate         Float               @default(0.08)
   vatRate            Float               @default(0.20)
   isCurrent          Boolean             @default(true)
   createdAt          DateTime            @default(now())
-  inputs             ProjectInput[]
+  bathroomCount      Int                 @default(0)
+  buildingAge        String?
+  energyPackage      String?
+  hasKitchen         Boolean             @default(false)
+  siteAccess         String?
   calculationResults CalculationResult[]
+  inputs             ProjectInput[]
+  energyStandard     EnergyStandard?     @relation(fields: [energyStandardId], references: [id])
+  finishLevel        FinishLevel?        @relation(fields: [finishLevelId], references: [id])
+  project            Project             @relation(fields: [projectId], references: [id])
+  renovationScope    RenovationScope?    @relation(fields: [renovationScopeId], references: [id])
+  structureSystem    StructureSystem?    @relation(fields: [structureSystemId], references: [id])
   reports            Report[]
 }
 
 model ProjectInput {
   id               String         @id @default(cuid())
   projectVersionId String
-  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id])
   inputKey         String
   inputValue       String
   unit             String?
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id])
 }
-
-// ─── COST LIBRARY ─────────────────────────────────────────────────────────────
 
 model CostCategory {
   id           String                    @id @default(cuid())
@@ -225,53 +215,48 @@ model CostCategory {
 model CostCategoryTranslation {
   id             String       @id @default(cuid())
   costCategoryId String
-  costCategory   CostCategory @relation(fields: [costCategoryId], references: [id])
   languageCode   String
   label          String
+  costCategory   CostCategory @relation(fields: [costCategoryId], references: [id])
 }
 
 model CostLot {
   id                     String                  @id @default(cuid())
   categoryId             String
-  category               CostCategory            @relation(fields: [categoryId], references: [id])
   code                   String                  @unique
   defaultUnit            String                  @default("m2")
   calculationMode        String                  @default("formula")
   isActive               Boolean                 @default(true)
   sortOrder              Int                     @default(0)
+  resultLines            CalculationResultLine[]
+  complexityCoefficients ComplexityCoefficient[]
+  category               CostCategory            @relation(fields: [categoryId], references: [id])
   translations           CostLotTranslation[]
   priceItems             PriceItem[]
-  resultLines            CalculationResultLine[]
-  regionalCoefficients   RegionalCoefficient[]
   qualityCoefficients    QualityCoefficient[]
-  complexityCoefficients ComplexityCoefficient[]
+  regionalCoefficients   RegionalCoefficient[]
 }
 
 model CostLotTranslation {
   id           String  @id @default(cuid())
   costLotId    String
-  costLot      CostLot @relation(fields: [costLotId], references: [id])
   languageCode String
   label        String
   description  String?
+  costLot      CostLot @relation(fields: [costLotId], references: [id])
 }
 
 model PriceItem {
   id                String                 @id @default(cuid())
   costLotId         String
-  costLot           CostLot                @relation(fields: [costLotId], references: [id])
   itemCode          String                 @unique
   referenceName     String
   unit              String
   basePriceHt       Float
   countryId         String
-  country           Country                @relation(fields: [countryId], references: [id])
   regionId          String?
-  region            Region?                @relation(fields: [regionId], references: [id])
   finishLevelId     String?
-  finishLevel       FinishLevel?           @relation(fields: [finishLevelId], references: [id])
   renovationScopeId String?
-  renovationScope   RenovationScope?       @relation(fields: [renovationScopeId], references: [id])
   complexityMin     Float                  @default(0)
   complexityMax     Float                  @default(999)
   validFrom         DateTime               @default(now())
@@ -281,6 +266,11 @@ model PriceItem {
   confidenceLevel   String                 @default("medium")
   indexCode         String?
   isActive          Boolean                @default(true)
+  costLot           CostLot                @relation(fields: [costLotId], references: [id])
+  country           Country                @relation(fields: [countryId], references: [id])
+  finishLevel       FinishLevel?           @relation(fields: [finishLevelId], references: [id])
+  region            Region?                @relation(fields: [regionId], references: [id])
+  renovationScope   RenovationScope?       @relation(fields: [renovationScopeId], references: [id])
   translations      PriceItemTranslation[]
   updateLogs        PriceUpdateLog[]
 }
@@ -288,87 +278,83 @@ model PriceItem {
 model PriceItemTranslation {
   id               String    @id @default(cuid())
   priceItemId      String
-  priceItem        PriceItem @relation(fields: [priceItemId], references: [id])
   languageCode     String
   label            String
   shortDescription String?
+  priceItem        PriceItem @relation(fields: [priceItemId], references: [id])
 }
 
 model PriceUpdateLog {
   id           String    @id @default(cuid())
   priceItemId  String
-  priceItem    PriceItem @relation(fields: [priceItemId], references: [id])
   oldPriceHt   Float
   newPriceHt   Float
   updateMethod String    @default("manual")
   indexRef     String?
   updatedById  String?
-  updatedBy    User?     @relation(fields: [updatedById], references: [id])
   updatedAt    DateTime  @default(now())
+  priceItem    PriceItem @relation(fields: [priceItemId], references: [id])
+  updatedBy    User?     @relation(fields: [updatedById], references: [id])
 }
-
-// ─── COEFFICIENTS & INDICES ───────────────────────────────────────────────────
 
 model MarketIndex {
   id          String   @id @default(cuid())
   countryId   String
-  country     Country  @relation(fields: [countryId], references: [id])
   code        String
   label       String
   periodDate  DateTime
   value       Float
   publishedAt DateTime
   sourceUrl   String?
+  country     Country  @relation(fields: [countryId], references: [id])
 }
 
 model RegionalCoefficient {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   countryId   String
-  country     Country  @relation(fields: [countryId], references: [id])
   regionId    String
-  region      Region   @relation(fields: [regionId], references: [id])
   costLotId   String?
-  costLot     CostLot? @relation(fields: [costLotId], references: [id])
   coefficient Float
-  validFrom   DateTime @default(now())
+  validFrom   DateTime  @default(now())
   validTo     DateTime?
+  costLot     CostLot?  @relation(fields: [costLotId], references: [id])
+  country     Country   @relation(fields: [countryId], references: [id])
+  region      Region    @relation(fields: [regionId], references: [id])
 }
 
 model QualityCoefficient {
   id            String      @id @default(cuid())
   finishLevelId String
-  finishLevel   FinishLevel @relation(fields: [finishLevelId], references: [id])
   costLotId     String?
-  costLot       CostLot?    @relation(fields: [costLotId], references: [id])
   coefficient   Float
+  costLot       CostLot?    @relation(fields: [costLotId], references: [id])
+  finishLevel   FinishLevel @relation(fields: [finishLevelId], references: [id])
 }
 
 model ComplexityCoefficient {
   id             String   @id @default(cuid())
   complexityCode String
   costLotId      String?
-  costLot        CostLot? @relation(fields: [costLotId], references: [id])
   coefficient    Float
+  costLot        CostLot? @relation(fields: [costLotId], references: [id])
 }
-
-// ─── RULE ENGINE ──────────────────────────────────────────────────────────────
 
 model CalculationRule {
   id                String          @id @default(cuid())
   ruleCode          String          @unique
   name              String
-  labelFr           String?
-  labelTr           String?
   ruleType          String          @default("condition")
   inputSchemaJson   String?
   formulaExpression String?
   outputTarget      String?
-  conditionJson     String?         // JSON object for condition evaluation
-  actionJson        String?         // JSON object for action effects
-  regionScope       String?         // "IDF" | "major_city" | "ALL" | null
   priority          Int             @default(0)
   isActive          Boolean         @default(true)
   countryId         String?
+  actionJson        String?
+  conditionJson     String?
+  labelFr           String?
+  labelTr           String?
+  regionScope       String?
   country           Country?        @relation(fields: [countryId], references: [id])
   conditions        RuleCondition[]
 }
@@ -376,18 +362,15 @@ model CalculationRule {
 model RuleCondition {
   id           String          @id @default(cuid())
   ruleId       String
-  rule         CalculationRule @relation(fields: [ruleId], references: [id])
   fieldName    String
   operator     String
   compareValue String
+  rule         CalculationRule @relation(fields: [ruleId], references: [id])
 }
-
-// ─── RESULTS & REPORTS ────────────────────────────────────────────────────────
 
 model CalculationResult {
   id               String                  @id @default(cuid())
   projectVersionId String
-  projectVersion   ProjectVersion          @relation(fields: [projectVersionId], references: [id])
   totalCostHt      Float
   totalCostTva     Float
   totalCostTtc     Float
@@ -396,30 +379,31 @@ model CalculationResult {
   confidenceLevel  String                  @default("indicatif")
   breakdownJson    String?
   createdAt        DateTime                @default(now())
+  projectVersion   ProjectVersion          @relation(fields: [projectVersionId], references: [id])
   lines            CalculationResultLine[]
 }
 
 model CalculationResultLine {
   id                      String            @id @default(cuid())
   calculationResultId     String
-  calculationResult       CalculationResult @relation(fields: [calculationResultId], references: [id])
   costLotId               String
-  costLot                 CostLot           @relation(fields: [costLotId], references: [id])
   quantity                Float
   unit                    String
   unitPriceHt             Float
   lineTotalHt             Float
   appliedCoefficientsJson String?
+  calculationResult       CalculationResult @relation(fields: [calculationResultId], references: [id])
+  costLot                 CostLot           @relation(fields: [costLotId], references: [id])
 }
 
 model Report {
   id               String         @id @default(cuid())
   projectVersionId String
-  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id])
   reportType       String         @default("summary")
   languageCode     String         @default("fr")
   filePath         String?
   generatedById    String?
-  generatedBy      User?          @relation(fields: [generatedById], references: [id])
   generatedAt      DateTime       @default(now())
+  generatedBy      User?          @relation(fields: [generatedById], references: [id])
+  projectVersion   ProjectVersion @relation(fields: [projectVersionId], references: [id])
 }

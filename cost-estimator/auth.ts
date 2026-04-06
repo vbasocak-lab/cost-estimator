@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 
 const nextAuth = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {
@@ -48,6 +49,7 @@ const nextAuth = NextAuth({
       return token;
     },
     session({ session, token }) {
+      session.user ??= {} as any;
       session.user.id = token.id as string;
       session.user.role = token.role as string;
       session.user.companyId = token.companyId as string | null;
@@ -60,30 +62,35 @@ const nextAuth = NextAuth({
 });
 
 async function getBypassSession() {
-  const user = await prisma.user.findFirst({
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      companyId: true,
-      preferredLanguage: true,
-    },
-  });
-
-  if (user) {
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: `${user.firstName} ${user.lastName}`.trim(),
-        role: "admin",
-        companyId: user.companyId,
-        preferredLanguage: user.preferredLanguage || "fr",
+  try {
+    const user = await prisma.user.findFirst({
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        companyId: true,
+        preferredLanguage: true,
       },
-    };
+    });
+
+    if (user) {
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          role: "admin",
+          companyId: user.companyId,
+          preferredLanguage: user.preferredLanguage || "fr",
+        },
+      };
+    }
+  } catch {
+    // If DB connection is unavailable (e.g. invalid production URL),
+    // keep app accessible with a static bypass user.
   }
 
   return {
@@ -98,15 +105,24 @@ async function getBypassSession() {
   };
 }
 
+function hasUsableSession(session: any) {
+  return Boolean(session?.user?.id && typeof session.user.name === "string");
+}
+
 export const auth = ((...args: any[]) => {
   if (typeof args[0] === "function") {
     return (nextAuth.auth as any)(...args);
   }
 
-  return (nextAuth.auth as any)(...args).then(async (session: any) => {
-    if (session) return session;
-    return getBypassSession();
-  });
+  return Promise.resolve()
+    .then(() => (nextAuth.auth as any)(...args))
+    .then(async (session: any) => {
+      if (hasUsableSession(session)) return session;
+      return getBypassSession();
+    })
+    .catch(async () => {
+      return getBypassSession();
+    });
 }) as typeof nextAuth.auth;
 
 export const { handlers, signIn, signOut } = nextAuth;

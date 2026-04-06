@@ -39,13 +39,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
             </div>
 
             <Link
-              href={`/${locale}/login`}
+              href={`/${locale}/dashboard`}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
             >
               Connexion
             </Link>
             <Link
-              href={`/${locale}/login`}
+              href={`/${locale}/dashboard`}
               className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               {t("hero.cta")}
@@ -69,13 +69,13 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
           </p>
           <div className="flex gap-4">
             <Link
-              href={`/${locale}/login`}
+              href={`/${locale}/dashboard`}
               className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-colors text-lg"
             >
               {t("hero.cta")}
             </Link>
             <Link
-              href={`/${locale}/login`}
+              href={`/${locale}/dashboard`}
               className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-gray-400 transition-colors text-lg"
             >
               {t("hero.demo")}

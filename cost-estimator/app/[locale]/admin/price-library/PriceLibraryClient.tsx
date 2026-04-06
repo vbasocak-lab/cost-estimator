@@ -251,10 +251,6 @@ export default function PriceLibraryClient({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [saving, setSaving] = useState(false);
-  const [bulkSaving, setBulkSaving] = useState(false);
-  const [bulkPercent, setBulkPercent] = useState("5");
-  const [bulkLot, setBulkLot] = useState("all");
-  const [bulkMessage, setBulkMessage] = useState("");
   const [indexSaving, setIndexSaving] = useState(false);
   const [referenceIndex, setReferenceIndex] = useState("100");
   const [currentIndex, setCurrentIndex] = useState("128.4");
@@ -291,55 +287,6 @@ export default function PriceLibraryClient({
       }
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleBulkUpdate = async () => {
-    const pct = parseFloat(bulkPercent);
-    if (!Number.isFinite(pct)) {
-      setBulkMessage("Gecerli bir yuzde girin.");
-      return;
-    }
-
-    setBulkSaving(true);
-    setBulkMessage("");
-
-    try {
-      const res = await fetch("/api/price-library", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mode: "bulk",
-          percentage: pct,
-          lotCode: bulkLot,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setBulkMessage(err.error || "Toplu guncelleme basarisiz.");
-        return;
-      }
-
-      const payload = await res.json();
-      const ids = new Set<string>((payload.ids || []) as string[]);
-      const multiplier = 1 + pct / 100;
-
-      setLocalItems((prev) =>
-        prev.map((item) => {
-          if (!ids.has(item.id)) return item;
-          const nextPrice = Math.max(0, Number((item.basePriceHt * multiplier).toFixed(2)));
-          return {
-            ...item,
-            basePriceHt: nextPrice,
-            updateLogs: [{ updatedAt: new Date(), updateMethod: "bulk_percent" }, ...(item.updateLogs || [])],
-          };
-        })
-      );
-
-      setBulkMessage(`${payload.updatedCount || 0} kayit guncellendi.`);
-    } finally {
-      setBulkSaving(false);
     }
   };
 
@@ -412,49 +359,8 @@ export default function PriceLibraryClient({
       {/* Filters */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-5">
         {isAdmin && (
-          <div className="mb-4 p-4 rounded-xl border border-blue-200 bg-blue-50">
-            <div className="text-sm font-semibold text-blue-900 mb-3">Toplu Fiyat Guncelleme</div>
-            <div className="flex flex-wrap items-end gap-3">
-              <div>
-                <label className="block text-xs text-blue-800 mb-1">Yuzde (+/-)</label>
-                <input
-                  type="number"
-                  value={bulkPercent}
-                  onChange={(e) => setBulkPercent(e.target.value)}
-                  step="0.1"
-                  className="w-28 px-3 py-2 border border-blue-300 rounded-lg text-sm text-gray-900 bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-blue-800 mb-1">Lot filtresi</label>
-                <select
-                  value={bulkLot}
-                  onChange={(e) => setBulkLot(e.target.value)}
-                  className="px-3 py-2 border border-blue-300 rounded-lg text-sm text-gray-900 bg-white"
-                >
-                  <option value="all">Tum lotlar</option>
-                  {lots.map((lot) => (
-                    <option key={lot} value={lot}>
-                      {items.find((i) => i.costLot.code === lot)?.costLot.translations[0]?.label || lot}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={handleBulkUpdate}
-                disabled={bulkSaving}
-                className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {bulkSaving ? "Guncelleniyor..." : "Toplu uygula"}
-              </button>
-            </div>
-            {bulkMessage && <div className="mt-2 text-xs text-blue-800">{bulkMessage}</div>}
-          </div>
-        )}
-
-        {isAdmin && (
           <div className="mb-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50">
-            <div className="text-sm font-semibold text-emerald-900 mb-1">{tAdmin("updateIndex")}</div>
+            <div className="text-sm font-semibold text-emerald-900 mb-1">Aktuel Fiyat Guncelleme Programi</div>
             <div className="text-xs text-emerald-800 mb-3">indexed_price = base_price * (current_index / reference_index)</div>
             <div className="flex flex-wrap items-end gap-3">
               <div>
