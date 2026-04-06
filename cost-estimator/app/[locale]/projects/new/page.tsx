@@ -144,6 +144,12 @@ function SelectField({
   );
 }
 
+// Fields that auto-fill from SHAB; kept at module level for stable reference
+const AUTO_FILL_FIELDS: (keyof WizardData)[] = [
+  "bedroomCount", "bathroomCount", "wcCount",
+  "roomCount", "interiorDoorCount", "hasStair", "kitchenType",
+];
+
 // ── Main wizard ───────────────────────────────────────────────────────────────
 
 export default function NewProjectPage() {
@@ -209,6 +215,8 @@ export default function NewProjectPage() {
     label: "V1",
   });
 
+  const [userModifiedFields, setUserModifiedFields] = useState<Set<keyof WizardData>>(new Set());
+
   const set = (field: keyof WizardData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const rawValue = e.target.value;
     const val = e.target.type === "checkbox"
@@ -217,25 +225,24 @@ export default function NewProjectPage() {
       ? Number.parseFloat(rawValue.replace(",", ".")) || 0
       : rawValue;
     setData((prev) => ({ ...prev, [field]: val }));
+    setUserModifiedFields((prev) => new Set(prev).add(field));
   };
 
-  // Auto-compute default program values when SHAB changes
+  // Auto-compute default program values when SHAB changes (skips user-modified fields)
   useEffect(() => {
     const shab = data.netAreaM2 > 0 ? data.netAreaM2 : data.grossAreaM2 * 0.85;
-    if (shab > 0) {
-      const defaults = generateDefaultProgram(shab, data.floorsAboveGround);
-      setData((prev) => ({
-        ...prev,
-        bedroomCount: defaults.bedroomCount,
-        bathroomCount: defaults.bathroomCount,
-        wcCount: defaults.wcCount,
-        roomCount: defaults.roomCount,
-        interiorDoorCount: defaults.interiorDoorCount,
-        hasStair: defaults.hasStair,
-        kitchenType: defaults.kitchenType,
-      }));
-    }
-  }, [data.grossAreaM2, data.netAreaM2, data.floorsAboveGround]);
+    if (shab <= 0) return;
+    const defaults = generateDefaultProgram(shab, data.floorsAboveGround);
+    setData((prev) => {
+      const patch: Partial<WizardData> = {};
+      for (const field of AUTO_FILL_FIELDS) {
+        if (!userModifiedFields.has(field)) {
+          (patch as Record<string, unknown>)[field] = defaults[field as keyof typeof defaults];
+        }
+      }
+      return { ...prev, ...patch };
+    });
+  }, [data.grossAreaM2, data.netAreaM2, data.floorsAboveGround, userModifiedFields]);
 
   const STEPS = [t("step1"), t("step2"), t("step3"), t("step4"), t("step5")];
   const effectiveGrossAreaM2 = data.grossAreaM2 > 0 ? data.grossAreaM2 : data.netAreaM2;
