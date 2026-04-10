@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { generateDefaultProgram } from "@/lib/engine/project-defaults";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface WizardData {
@@ -40,6 +41,8 @@ interface WizardData {
   bathroomCount: number;
   wcCount: number;
   bedroomCount: number;
+  roomCount: number;
+  interiorDoorCount: number;
   hasStair: boolean;
   stairType: string;
   stairFinish: string;
@@ -141,6 +144,12 @@ function SelectField({
   );
 }
 
+// Fields that auto-fill from SHAB; kept at module level for stable reference
+const AUTO_FILL_FIELDS: (keyof WizardData)[] = [
+  "bedroomCount", "bathroomCount", "wcCount",
+  "roomCount", "interiorDoorCount", "hasStair", "kitchenType",
+];
+
 // ── Main wizard ───────────────────────────────────────────────────────────────
 
 export default function NewProjectPage() {
@@ -185,6 +194,8 @@ export default function NewProjectPage() {
     bathroomCount: 1,
     wcCount: 1,
     bedroomCount: 2,
+    roomCount: 4,
+    interiorDoorCount: 5,
     hasStair: false,
     stairType: "straight",
     stairFinish: "wood",
@@ -204,6 +215,8 @@ export default function NewProjectPage() {
     label: "V1",
   });
 
+  const [userModifiedFields, setUserModifiedFields] = useState<Set<keyof WizardData>>(new Set());
+
   const set = (field: keyof WizardData) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const rawValue = e.target.value;
     const val = e.target.type === "checkbox"
@@ -212,7 +225,24 @@ export default function NewProjectPage() {
       ? Number.parseFloat(rawValue.replace(",", ".")) || 0
       : rawValue;
     setData((prev) => ({ ...prev, [field]: val }));
+    setUserModifiedFields((prev) => new Set(prev).add(field));
   };
+
+  // Auto-compute default program values when SHAB changes (skips user-modified fields)
+  useEffect(() => {
+    const shab = data.netAreaM2 > 0 ? data.netAreaM2 : data.grossAreaM2 * 0.85;
+    if (shab <= 0) return;
+    const defaults = generateDefaultProgram(shab, data.floorsAboveGround);
+    setData((prev) => {
+      const patch: Partial<WizardData> = {};
+      for (const field of AUTO_FILL_FIELDS) {
+        if (!userModifiedFields.has(field)) {
+          (patch as Record<string, unknown>)[field] = defaults[field as keyof typeof defaults];
+        }
+      }
+      return { ...prev, ...patch };
+    });
+  }, [data.grossAreaM2, data.netAreaM2, data.floorsAboveGround, userModifiedFields]);
 
   const STEPS = [t("step1"), t("step2"), t("step3"), t("step4"), t("step5")];
   const effectiveGrossAreaM2 = data.grossAreaM2 > 0 ? data.grossAreaM2 : data.netAreaM2;
@@ -297,6 +327,8 @@ export default function NewProjectPage() {
           bathroomCount: data.bathroomCount,
           wcCount: data.wcCount,
           bedroomCount: data.bedroomCount,
+          roomCount: data.roomCount,
+          interiorDoorCount: data.interiorDoorCount,
           // Stairs
           hasStair: data.hasStair,
           stairType: data.stairType,

@@ -251,19 +251,33 @@ export async function generateActiveCodeList(
       const existing = activations.find((a) => a.lotCode === mapping.targetLot);
       if (!existing) continue;
 
+      const qty = resolveDbQuantity(mapping.quantityMode ?? "forfait", mapping.quantityValue ?? null, input);
+
       if (mapping.replaceMode === "replace") {
+        if (mapping.defaultCodes.length === 0) continue;
         existing.articleCodes = mapping.defaultCodes;
+        existing.quantities = {};
+        for (const c of mapping.defaultCodes) {
+          existing.quantities[c] = qty;
+        }
       } else if (mapping.replaceMode === "add_only") {
         for (const c of mapping.defaultCodes) {
-          if (!existing.articleCodes.includes(c)) existing.articleCodes.push(c);
+          if (!existing.articleCodes.includes(c)) {
+            existing.articleCodes.push(c);
+            existing.quantities[c] = qty;
+          }
         }
       } else {
         // merge: add default codes, remove overridden ones
         for (const c of mapping.overrideCodes) {
           existing.articleCodes = existing.articleCodes.filter((x) => x !== c);
+          delete existing.quantities[c];
         }
         for (const c of mapping.defaultCodes) {
-          if (!existing.articleCodes.includes(c)) existing.articleCodes.push(c);
+          if (!existing.articleCodes.includes(c)) {
+            existing.articleCodes.push(c);
+            existing.quantities[c] = qty;
+          }
         }
       }
     }
@@ -272,6 +286,28 @@ export async function generateActiveCodeList(
   }
 
   return activations.filter((a) => a.articleCodes.length > 0);
+}
+
+// ─── DB QUANTITY RESOLVER ─────────────────────────────────────────────────────
+
+function resolveDbQuantity(mode: string, value: number | null | undefined, input: MappingInput): number {
+  switch (mode) {
+    case "surface_shon":        return input.surfaceShonM2;
+    case "surface_shab":        return input.surfaceShabM2;
+    case "window_area": {
+      const area = input.windowAreaRatio * input.surfaceShabM2;
+      return area > 0 ? area : 1;
+    }
+    case "interior_door_count": return input.interiorDoorCount;
+    case "bathroom_count":      return input.bathroomCount;
+    case "wc_count":            return input.wcCount;
+    case "roof_window_count":   return input.roofWindowCount;
+    case "count_fixed_1":       return 1;
+    case "count_fixed_2":       return 2;
+    case "manual_value":        return value ?? 1;
+    case "forfait":
+    default:                    return 1;
+  }
 }
 
 // ─── RESOLVER HELPERS ────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { key: "projects", href: "/projects", icon: "📁", adminOnly: false },
   { key: "reports", href: "/reports", icon: "📄", adminOnly: false },
   { key: "priceLibrary", href: "/admin/price-library", icon: "💰", adminOnly: true },
+  { key: "inputMapping", href: "/admin/input-mapping", icon: "🔄", adminOnly: true },
   { key: "rules", href: "/admin/rules", icon: "⚙️", adminOnly: true },
 ];
 

@@ -125,6 +125,103 @@ export default async function ProjectDetailPage({
         </div>
       ) : (
         <>
+          {/* Configuration Summary */}
+          {currentVersion && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">{tProjects("configSummary")}</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                {/* Structure */}
+                <div>
+                  <span className="text-gray-500">{tProjects("structureType")}</span>
+                  <p className="font-medium text-gray-900">{currentVersion.structureType || tProjects("notSpecified")}</p>
+                </div>
+                {/* Roof */}
+                <div>
+                  <span className="text-gray-500">{tProjects("roofType")}</span>
+                  <p className="font-medium text-gray-900">{currentVersion.roofType || tProjects("notSpecified")}</p>
+                </div>
+                {/* Heating System + Distribution */}
+                <div>
+                  <span className="text-gray-500">{tProjects("heatingSystem")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.heatingSystem || tProjects("notSpecified")}
+                    {currentVersion.heatingDistribution && (
+                      <span className="text-gray-500"> + {currentVersion.heatingDistribution}</span>
+                    )}
+                  </p>
+                </div>
+                {/* Ventilation */}
+                <div>
+                  <span className="text-gray-500">{tProjects("ventilationType")}</span>
+                  <p className="font-medium text-gray-900">{currentVersion.ventilationType || tProjects("notSpecified")}</p>
+                </div>
+                {/* Electric Level */}
+                <div>
+                  <span className="text-gray-500">{tProjects("electricLevel")}</span>
+                  <p className="font-medium text-gray-900">{currentVersion.electricLevel || tProjects("notSpecified")}</p>
+                </div>
+                {/* Window System */}
+                <div>
+                  <span className="text-gray-500">{tProjects("windowSystem")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.windowFrameType || tProjects("notSpecified")}
+                    {currentVersion.windowGlazingType && (
+                      <span className="text-gray-500"> / {currentVersion.windowGlazingType}</span>
+                    )}
+                  </p>
+                </div>
+                {/* Interior Doors */}
+                <div>
+                  <span className="text-gray-500">{tProjects("interiorDoors")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.interiorDoorCount || 0} {tProjects("doors")}
+                    {currentVersion.interiorDoorType && (
+                      <span className="text-gray-500"> ({currentVersion.interiorDoorType})</span>
+                    )}
+                  </p>
+                </div>
+                {/* Bathrooms */}
+                <div>
+                  <span className="text-gray-500">{tProjects("bathrooms")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.bathroomCount || 0}
+                    {currentVersion.bathroomLevel && (
+                      <span className="text-gray-500"> / {currentVersion.bathroomLevel}</span>
+                    )}
+                  </p>
+                </div>
+                {/* Kitchen */}
+                <div>
+                  <span className="text-gray-500">{tProjects("kitchenType")}</span>
+                  <p className="font-medium text-gray-900">{currentVersion.kitchenType || tProjects("notSpecified")}</p>
+                </div>
+                {/* Stair */}
+                <div>
+                  <span className="text-gray-500">{tProjects("stairType")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.hasStair ? (currentVersion.stairType || tProjects("standard")) : tProjects("noStair")}
+                  </p>
+                </div>
+                {/* Buanderie */}
+                <div>
+                  <span className="text-gray-500">{tProjects("buanderie")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.hasBuanderie ? tProjects("yes") : tProjects("no")}
+                  </p>
+                </div>
+                {/* Cellier */}
+                <div>
+                  <span className="text-gray-500">{tProjects("cellier")}</span>
+                  <p className="font-medium text-gray-900">
+                    {currentVersion.hasCellier 
+                      ? (currentVersion.cellierStorageLevel || tProjects("standard")) 
+                      : tProjects("no")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* KPI Cards */}
           <div className="grid grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
